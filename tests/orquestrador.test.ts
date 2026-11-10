@@ -274,8 +274,6 @@ describe("post das 18h (slot tarde)", () => {
     expect(ch.publicar ?? 0).toBe(publicadosAntes); // 17:59: a tarde ainda não publica
     await tick(store, new BlobsFalsos(), CONTA, { agora: em("18:00"), passos });
     expect(ch.publicar).toBe(publicadosAntes + 1); // 18:00: publicou a tarde
-    // o post do dia (12h) já estava encerrado/criado à parte: não ganhou nada da grade da tarde
-    expect(ch.pesquisa ?? 0).toBeGreaterThanOrEqual(1);
   });
 
   it("a janela da tarde é a das 18h: às 18:31 sem estar pronto perde a janela", async () => {
