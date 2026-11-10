@@ -307,6 +307,13 @@ export async function tick(store: Store, blobs: Blobs, conta: string, op: Opcoes
       let atual = p;
       for (let i = 0; i < 8; i++) {
         if (Date.now() - inicio > orcamento) break;
+        // Relê o post a cada passo: um reset/pausa feito por fora (painel ou script) no meio do ciclo tem que valer,
+        // senão o laço continua escrevendo por cima com um objeto velho (aconteceu em 10/11/2026).
+        if (i > 0) {
+          const fresco = await store.getPost(atual.id);
+          if (!fresco || fresco.pausado || ehTerminal(fresco)) break;
+          if (fresco.atualizado_em !== atual.atualizado_em) atual = fresco;
+        }
         const antes = atual.status + "|" + atual.atualizado_em;
         const r = await avancar(ctx, atual, op);
         atual = r.post;
