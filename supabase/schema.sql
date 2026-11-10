@@ -15,11 +15,11 @@ create table if not exists posts (
   id uuid primary key default gen_random_uuid(),
   conta text not null,
   data date not null,
-  kind text not null default 'dia' check (kind in ('dia','reserva','teste')),
+  kind text not null default 'dia' check (kind in ('dia','tarde','reserva','teste')),
   status text not null default 'novo',
   modo text not null default 'manual' check (modo in ('automatico','manual')),
   pausado boolean not null default false,
-  tipo_pauta text not null default 'noticia' check (tipo_pauta in ('noticia','atemporal')),
+  tipo_pauta text not null default 'noticia' check (tipo_pauta in ('noticia','atemporal','referencia')),
   pauta jsonb,
   justificativa text,
   roteiro jsonb,
@@ -39,6 +39,23 @@ create table if not exists posts (
 
 -- Chave única por conta e data: impede dois posts "do dia" na mesma data (idempotência).
 create unique index if not exists posts_dia_unico on posts (conta, data) where kind = 'dia';
+create unique index if not exists posts_tarde_unico on posts (conta, data) where kind = 'tarde';
+
+-- Posts dos perfis de referência (base do post das 18h). Coletados pelo Chrome do Julio; o servidor só lê.
+create table if not exists referencias_ig (
+  username text not null,
+  codigo text not null,
+  url text not null,
+  tipo text not null default 'reel' check (tipo in ('reel','post')),
+  views bigint,
+  likes int,
+  comentarios int,
+  data_post date,
+  legenda text,
+  coletado_em timestamptz not null default now(),
+  primary key (username, codigo)
+);
+alter table referencias_ig enable row level security;
 create index if not exists posts_data_idx on posts (data desc);
 create index if not exists posts_status_idx on posts (status);
 

@@ -77,3 +77,20 @@ export const SCHEMA_RECHECK = {
   nome: "checagem_final_de_atualidade",
   schema: obj({ ainda_valido: bool, houve_novo_desenvolvimento: bool, resumo: str, fontes_novas: arr(str) }),
 };
+
+export const SCHEMA_REFERENCIAS = {
+  nome: "candidatos_por_referencia",
+  schema: obj({
+    candidatos: arr(
+      obj({
+        titulo: str,
+        o_que_aconteceu: str,
+        evidencias_de_atencao: str,
+        conexao_com_clinica: str,
+        riscos: str,
+        codigos: arr(str),
+        notas: obj({ atualidade: num, gancho: num, relevancia: num, confiabilidade: num, originalidade: num }),
+      }),
+    ),
+  }),
+};

@@ -15,7 +15,7 @@ export default async function Hoje() {
   const [cfg, agora] = [await store.getConfig(), agoraSP()];
   const conta = env("IG_CONTA") || "juliosouza_costa";
   const hoje = await store.getPostPorData(conta, agora.data, "dia");
-  const outros = (await store.listarPosts({ desde: agora.data, ate: agora.data, kinds: ["teste", "reserva"], limite: 10 }));
+  const outros = (await store.listarPosts({ desde: agora.data, ate: agora.data, kinds: ["tarde", "teste", "reserva"], limite: 10 }));
   const reservas = (await store.listarPosts({ kinds: ["reserva"], limite: 20 })).filter((p) => p.status === "aprovado");
   return (
     <>

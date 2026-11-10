@@ -21,7 +21,9 @@ export type StatusPost =
   | "falhou"
   | "perdeu_janela";
 
-export type KindPost = "dia" | "reserva" | "teste";
+// dia = post das 12h (notícia do mundo); tarde = post das 18h (tema tirado do que engaja nos perfis de referência);
+// reserva = plano B pronto; teste = nunca publica.
+export type KindPost = "dia" | "tarde" | "reserva" | "teste";
 
 export const STATUS_TERMINAIS: StatusPost[] = [
   "publicado",
@@ -69,7 +71,22 @@ export type Pauta = {
   descartada_por?: string | null;
 };
 
-export type TipoPauta = "noticia" | "atemporal";
+// referencia = pauta tirada dos posts mais engajados dos perfis de referência (post das 18h).
+export type TipoPauta = "noticia" | "atemporal" | "referencia";
+
+// Um post de um perfil de referência, coletado pelo Chrome do Julio e gravado em referencias_ig.
+export type ReferenciaIG = {
+  username: string;
+  codigo: string; // shortcode do Instagram
+  url: string;
+  tipo: "reel" | "post";
+  views: number | null;
+  likes: number | null;
+  comentarios: number | null;
+  data_post: string | null; // AAAA-MM-DD
+  legenda: string | null;
+  coletado_em: string;
+};
 
 export type Slide = {
   n: number;

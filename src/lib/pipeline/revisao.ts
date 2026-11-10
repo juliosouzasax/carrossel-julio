@@ -80,7 +80,7 @@ export async function executarRevisao(ctx: Ctx, post: Post): Promise<{ post: Pos
 // Checagem final de atualidade (11:45). A busca e a estruturação ficam em chamadas separadas.
 export async function executarRecheck(ctx: Ctx, post: Post): Promise<Recheck> {
   const { store, cfg } = ctx;
-  if (post.tipo_pauta === "atemporal" || !post.pauta) {
+  if (post.tipo_pauta === "atemporal" || post.tipo_pauta === "referencia" || !post.pauta) {
     return { em: new Date().toISOString(), ainda_valido: true, houve_novo_desenvolvimento: false, resumo: "Conteúdo atemporal: não depende de fato recente.", fontes_novas: [] };
   }
   await garantirOrcamento(store, cfg);

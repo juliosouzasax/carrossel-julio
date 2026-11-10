@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { configPadrao, mesclarConfig, type Config } from "../config";
-import type { Candidatos, ContaIG, LogRegistro, Post, UsoRegistro } from "../types";
+import type { Candidatos, ContaIG, LogRegistro, Post, UsoRegistro, ReferenciaIG } from "../types";
 import type { Blobs, NovoPost, Store } from "./tipos";
 
 // Armazenamento em memória. USO: testes automatizados e a execução demonstrativa local (STORE=memory).
@@ -31,8 +31,8 @@ export class MemoriaStore implements Store {
     return [...this.posts.values()].find((p) => p.conta === conta && p.data === data && p.kind === kind) ?? null;
   }
   async criarPost(p: NovoPost) {
-    if (p.kind === "dia") {
-      const existente = await this.getPostPorData(p.conta, p.data, "dia");
+    if (p.kind === "dia" || p.kind === "tarde") {
+      const existente = await this.getPostPorData(p.conta, p.data, p.kind);
       if (existente) return { post: existente, criado: false };
     }
     const agora = new Date().toISOString();
@@ -80,6 +80,15 @@ export class MemoriaStore implements Store {
   }
   async reservaPronta(conta: string) {
     return [...this.posts.values()].find((p) => p.conta === conta && p.kind === "reserva" && p.status === "aprovado" && !p.pausado) ?? null;
+  }
+
+  private refs = new Map<string, ReferenciaIG>();
+  async salvarReferencias(rows: ReferenciaIG[]) {
+    for (const r of rows) this.refs.set(`${r.username}/${r.codigo}`, r);
+    return rows.length;
+  }
+  async listarReferencias(f: { desdeColetaISO: string; usernames?: string[] }) {
+    return [...this.refs.values()].filter((r) => r.coletado_em >= f.desdeColetaISO && (!f.usernames?.length || f.usernames.includes(r.username)));
   }
 
   async salvarCandidatos(c: Omit<Candidatos, "id" | "criado_em">) {

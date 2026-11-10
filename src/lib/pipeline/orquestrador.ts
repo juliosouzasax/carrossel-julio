@@ -8,6 +8,7 @@ import { historico, logar, type Ctx } from "./contexto";
 import { executarImagens, regenerarImagem } from "./imagens";
 import { backoffMs, executarPublicacao, type DepsPublicar, type ResultadoPublicar } from "./publicar";
 import { executarPesquisa, pautaAtemporal, type ResultadoPesquisa } from "./pesquisa";
+import { executarPesquisaReferencias } from "./referencias";
 import { executarRender } from "./renderizar";
 import { executarRecheck, executarRevisao } from "./revisao";
 import { executarRoteiro } from "./roteiro";
@@ -17,6 +18,7 @@ import type { Recheck, Revisao } from "../types";
 // Cada passo é injetável: os testes trocam por versões falsas (sem OpenAI/Instagram).
 export type Passos = {
   pesquisa: (ctx: Ctx, post: Post) => Promise<ResultadoPesquisa>;
+  pesquisaReferencias: (ctx: Ctx, post: Post) => Promise<ResultadoPesquisa>;
   roteiro: (ctx: Ctx, post: Post, correcoes?: string[]) => Promise<Post>;
   imagens: (ctx: Ctx, post: Post) => Promise<Post>;
   regenerar: (ctx: Ctx, post: Post, indice: number, cena?: string) => Promise<Post>;
@@ -28,6 +30,7 @@ export type Passos = {
 
 export const PASSOS_REAIS: Passos = {
   pesquisa: executarPesquisa,
+  pesquisaReferencias: executarPesquisaReferencias,
   roteiro: executarRoteiro,
   imagens: executarImagens,
   regenerar: regenerarImagem,
@@ -48,15 +51,20 @@ export function criarCtx(store: Store, blobs: Blobs, cfg: Config, agora: AgoraSP
 
 // ---------------------------------------------------------------------------------------------------
 // Janela de publicação (política de atraso): só publica entre o horário e o horário + janela.
-export function estadoDaJanela(cfg: Config, agora: AgoraSP): "antes" | "dentro" | "depois" {
-  const pub = minutosDe(cfg.horarios.publicacao);
+// Cada slot tem a sua grade: "dia" (12h) usa cfg.horarios; "tarde" (18h) usa cfg.tarde.horarios.
+export function horariosDe(cfg: Config, kind: Post["kind"]): Config["horarios"] {
+  return kind === "tarde" ? cfg.tarde.horarios : cfg.horarios;
+}
+
+export function estadoDaJanela(cfg: Config, agora: AgoraSP, kind: Post["kind"] = "dia"): "antes" | "dentro" | "depois" {
+  const pub = minutosDe(horariosDe(cfg, kind).publicacao);
   if (agora.minutos < pub) return "antes";
   if (agora.minutos <= pub + cfg.janela_publicacao_min) return "dentro";
   return "depois";
 }
 
-function liberadoPelo(cfg: Config, agora: AgoraSP, fase: "pesquisa" | "roteiro" | "recheck" | "publicacao"): boolean {
-  return agora.minutos >= minutosDe(cfg.horarios[fase]);
+function liberadoPelo(cfg: Config, agora: AgoraSP, fase: "pesquisa" | "roteiro" | "recheck" | "publicacao", kind: Post["kind"] = "dia"): boolean {
+  return agora.minutos >= minutosDe(horariosDe(cfg, kind)[fase]);
 }
 
 async function marcar(ctx: Ctx, post: Post, status: StatusPost, motivo: string | null, nivel: "info" | "aviso" | "erro" = "aviso"): Promise<Post> {
@@ -130,38 +138,41 @@ export async function avancar(ctx: Ctx, postInicial: Post, op: Opcoes = {}): Pro
   if (post.pausado) return { post, acao: "nada (pausado)" };
   if (post.proxima_tentativa_em && new Date(post.proxima_tentativa_em).getTime() > Date.now() && !op.forcar) return { post, acao: "nada (aguardando nova tentativa)" };
 
-  const dia = post.kind === "dia" && !op.forcar;
+  // "dia" e "tarde" são os posts agendados (têm grade de horário e janela); teste/reserva correm livres.
+  const dia = (post.kind === "dia" || post.kind === "tarde") && !op.forcar;
+  const h = horariosDe(cfg, post.kind);
 
   try {
     // ---- Política de atraso: passou da janela e ainda não publicou → não publica fora de hora.
-    if (dia && post.status !== "publicando" && estadoDaJanela(cfg, agora) === "depois") {
-      post = await marcar(ctx, post, "perdeu_janela", `Passou de ${cfg.horarios.publicacao} + ${cfg.janela_publicacao_min} min sem estar pronto; não publicamos fora do horário.`, "erro");
+    if (dia && post.status !== "publicando" && estadoDaJanela(cfg, agora, post.kind) === "depois") {
+      post = await marcar(ctx, post, "perdeu_janela", `Passou de ${h.publicacao} + ${cfg.janela_publicacao_min} min sem estar pronto; não publicamos fora do horário.`, "erro");
       return { post, acao: "perdeu a janela" };
     }
-    if (dia && post.status === "publicando" && estadoDaJanela(cfg, agora) === "depois" && !post.publicacao.container_carrossel_id) {
+    if (dia && post.status === "publicando" && estadoDaJanela(cfg, agora, post.kind) === "depois" && !post.publicacao.container_carrossel_id) {
       post = await marcar(ctx, post, "perdeu_janela", "Atraso na publicação além da janela permitida (nenhum container criado).", "erro");
       return { post, acao: "perdeu a janela" };
     }
 
     // ---- Prazo de revisão: se até lá o post não foi aprovado, aciona o plano B uma única vez.
-    if (dia && PRE_APROVACAO.includes(post.status) && agora.minutos >= minutosDe(cfg.horarios.prazo_revisao) && !post.tentativas["prazo"]) {
+    if (dia && PRE_APROVACAO.includes(post.status) && agora.minutos >= minutosDe(h.prazo_revisao) && !post.tentativas["prazo"]) {
       post = await ctx.store.atualizarPost(post.id, { tentativas: { ...post.tentativas, prazo: 1 } }).then((p) => p ?? post);
-      post = await acionarFallback(ctx, post, `o conteúdo não estava aprovado até o prazo de revisão (${cfg.horarios.prazo_revisao})`);
+      post = await acionarFallback(ctx, post, `o conteúdo não estava aprovado até o prazo de revisão (${h.prazo_revisao})`);
       return { post, acao: "plano B por prazo de revisão" };
     }
 
     switch (post.status) {
       case "novo":
       case "pesquisando": {
-        if (dia && !liberadoPelo(cfg, agora, "pesquisa")) return { post, acao: `nada (pesquisa só a partir de ${cfg.horarios.pesquisa})` };
+        if (dia && !liberadoPelo(cfg, agora, "pesquisa", post.kind)) return { post, acao: `nada (pesquisa só a partir de ${h.pesquisa})` };
         post = (await ctx.store.atualizarPost(post.id, { status: "pesquisando" })) ?? post;
-        const r = await passos.pesquisa(ctx, post);
+        // O post das 18h não pesquisa a web: lê o que engaja nos perfis de referência.
+        const r = post.kind === "tarde" ? await passos.pesquisaReferencias(ctx, post) : await passos.pesquisa(ctx, post);
         if (r.tipo === "ok") return { post: r.post, acao: "pesquisa concluída" };
         post = await acionarFallback(ctx, post, r.motivo);
         return { post, acao: "pesquisa sem pauta → plano B" };
       }
       case "pesquisado": {
-        if (dia && !liberadoPelo(cfg, agora, "roteiro")) return { post, acao: `nada (roteiro só a partir de ${cfg.horarios.roteiro})` };
+        if (dia && !liberadoPelo(cfg, agora, "roteiro", post.kind)) return { post, acao: `nada (roteiro só a partir de ${h.roteiro})` };
         post = await passos.roteiro(ctx, post);
         return { post, acao: "roteiro gerado" };
       }
@@ -184,7 +195,7 @@ export async function avancar(ctx: Ctx, postInicial: Post, op: Opcoes = {}): Pro
           return { post, acao: "sem revisão registrada; refazendo" };
         }
         if (ultima.aprovado) {
-          const manual = post.kind === "dia" && post.modo === "manual";
+          const manual = (post.kind === "dia" || post.kind === "tarde") && post.modo === "manual";
           post = await marcar(ctx, post, manual ? "aguardando_aprovacao" : "aprovado", null, "info");
           return { post, acao: manual ? "aguardando seu OK" : "aprovado" };
         }
@@ -208,7 +219,7 @@ export async function avancar(ctx: Ctx, postInicial: Post, op: Opcoes = {}): Pro
         return { post, acao: "nada (aguardando aprovação humana)" };
       case "aprovado": {
         if (post.kind === "reserva") return { post, acao: "nada (reserva pronta)" };
-        if (dia && !liberadoPelo(cfg, agora, "recheck")) return { post, acao: `nada (checagem final só a partir de ${cfg.horarios.recheck})` };
+        if (dia && !liberadoPelo(cfg, agora, "recheck", post.kind)) return { post, acao: `nada (checagem final só a partir de ${h.recheck})` };
         let rc: Recheck;
         try {
           rc = await passos.recheck(ctx, post);
@@ -236,7 +247,7 @@ export async function avancar(ctx: Ctx, postInicial: Post, op: Opcoes = {}): Pro
       case "pronto":
       case "publicando": {
         if (post.kind === "reserva") return { post, acao: "nada (reserva)" };
-        if (dia && post.status === "pronto" && estadoDaJanela(cfg, agora) === "antes") return { post, acao: `nada (publica às ${cfg.horarios.publicacao})` };
+        if (dia && post.status === "pronto" && estadoDaJanela(cfg, agora, post.kind) === "antes") return { post, acao: `nada (publica às ${h.publicacao})` };
         const r = await passos.publicar(ctx, post, op.depsPublicar);
         return { post: r.post, acao: `publicação: ${r.resultado}` };
       }
@@ -287,7 +298,7 @@ export async function tick(store: Store, blobs: Blobs, conta: string, op: Opcoes
     // Posts "dia" de dias anteriores que ficaram abertos: encerra (não publicamos conteúdo velho).
     const desde = agora.data;
     if (!somenteTeste) {
-    const antigos = await store.listarPosts({ ate: desde, kinds: ["dia"], limite: 20 });
+    const antigos = await store.listarPosts({ ate: desde, kinds: ["dia", "tarde"], limite: 20 });
     for (const p of antigos) if (p.data < agora.data && !ehTerminal(p) && p.status !== "publicando") await marcar(ctx, p, "perdeu_janela", "Dia encerrado sem publicação.", "erro");
 
     // Cria o post do dia quando chegar a hora da pesquisa.
@@ -295,12 +306,18 @@ export async function tick(store: Store, blobs: Blobs, conta: string, op: Opcoes
       const { post: criado, criado: novo } = await store.criarPost({ conta, data: agora.data, kind: "dia", status: "novo", modo: cfg.modo });
       if (novo) await logar(ctx, criado, "orquestrador", "info", `Post do dia ${agora.data} criado.`);
     }
+    // E o post das 18h (tarde), quando ligado, na hora da pesquisa dele.
+    if (cfg.tarde.ativo && cfg.dias_ativos.includes(agora.diaDaSemana) && agora.minutos >= minutosDe(cfg.tarde.horarios.pesquisa)) {
+      const { post: criado, criado: novo } = await store.criarPost({ conta, data: agora.data, kind: "tarde", status: "novo", modo: cfg.modo, tipo_pauta: "referencia" });
+      if (novo) await logar(ctx, criado, "orquestrador", "info", `Post das ${cfg.tarde.horarios.publicacao} (tarde) de ${agora.data} criado.`);
+    }
 
     }
 
-    // Trabalha nos abertos: primeiro o do dia, depois testes e reservas.
-    const abertos = (await store.listarPosts({ desde: agora.data, ate: agora.data, kinds: ["dia", "teste", "reserva"], limite: 30 })).filter((p) => !ehTerminal(p) && !p.pausado && (!somenteTeste || p.kind === "teste"));
-    abertos.sort((a, b) => (a.kind === "dia" ? 0 : 1) - (b.kind === "dia" ? 0 : 1));
+    // Trabalha nos abertos: primeiro o do dia, depois a tarde, depois testes e reservas.
+    const ordem = (k: Post["kind"]) => (k === "dia" ? 0 : k === "tarde" ? 1 : 2);
+    const abertos = (await store.listarPosts({ desde: agora.data, ate: agora.data, kinds: ["dia", "tarde", "teste", "reserva"], limite: 30 })).filter((p) => !ehTerminal(p) && !p.pausado && (!somenteTeste || p.kind === "teste"));
+    abertos.sort((a, b) => ordem(a.kind) - ordem(b.kind));
     // reservas/testes de dias anteriores também terminam de rodar
     const outros = (await store.listarPosts({ ate: agora.data, kinds: ["teste", "reserva"], limite: 30 })).filter((p) => p.data < agora.data && !ehTerminal(p) && !p.pausado && p.status !== "aprovado" && (!somenteTeste || p.kind === "teste"));
     for (const p of [...abertos, ...outros]) {

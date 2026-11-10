@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Historico() {
   await exigirPagina();
-  const posts = await getStore().listarPosts({ kinds: ["dia", "teste", "reserva"], limite: 120 });
+  const posts = await getStore().listarPosts({ kinds: ["dia", "tarde", "teste", "reserva"], limite: 120 });
   return (
     <>
       <Nav />

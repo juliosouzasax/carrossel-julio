@@ -28,6 +28,24 @@ export const ConfigSchema = z.object({
       publicacao: hhmm.default("12:00"),
     })
     .default({}),
+  // Segundo post do dia (18h): tema tirado do que está engajando nos perfis de referência. Nasce desligado.
+  tarde: z
+    .object({
+      ativo: z.boolean().default(false),
+      horarios: z
+        .object({
+          pesquisa: hhmm.default("15:00"),
+          roteiro: hhmm.default("15:30"),
+          prazo_revisao: hhmm.default("17:30"),
+          recheck: hhmm.default("17:45"),
+          publicacao: hhmm.default("18:00"),
+        })
+        .default({}),
+      perfis: z.array(z.string()).default(["annysoouto", "fabioavelarmkt", "rinovack", "ilaflavia"]),
+      // só entram referências coletadas há no máximo N dias
+      dias_de_coleta: z.number().int().min(1).max(365).default(90),
+    })
+    .default({}),
   // Política para atraso: só publica até N minutos depois do horário. Passou disso, registra e avisa no painel.
   janela_publicacao_min: z.number().int().min(0).max(240).default(30),
   dias_ativos: z.array(z.number().int().min(0).max(6)).default([0, 1, 2, 3, 4, 5, 6]),

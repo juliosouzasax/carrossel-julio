@@ -1,5 +1,5 @@
 import type { Config } from "../config";
-import type { Candidatos, ContaIG, KindPost, LogRegistro, Post, StatusPost, UsoRegistro } from "../types";
+import type { Candidatos, ContaIG, KindPost, LogRegistro, Post, ReferenciaIG, StatusPost, UsoRegistro } from "../types";
 
 export type NovoPost = Partial<Post> & { conta: string; data: string; kind: KindPost };
 
@@ -31,6 +31,10 @@ export interface Store {
 
   getConta(chave: string): Promise<ContaIG | null>;
   salvarConta(c: ContaIG): Promise<void>;
+
+  // Posts dos perfis de referência (base do post das 18h). Chave = (username, codigo); regravar atualiza.
+  salvarReferencias(rows: ReferenciaIG[]): Promise<number>;
+  listarReferencias(f: { desdeColetaISO: string; usernames?: string[] }): Promise<ReferenciaIG[]>;
 }
 
 export interface Blobs {

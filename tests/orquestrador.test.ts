@@ -240,3 +240,50 @@ describe("ações do painel", () => {
     expect(r.ok).toBe(false);
   });
 });
+
+describe("post das 18h (slot tarde)", () => {
+  it("desligado por padrão: às 15:00 não nasce post 'tarde'", async () => {
+    const store = novoStore();
+    await store.saveConfig({ ativo: true, modo_teste: false, modo: "automatico" });
+    await tick(store, new BlobsFalsos(), CONTA, { agora: em("15:00"), passos: passosFalsos({}) });
+    expect(await store.listarPosts({ kinds: ["tarde"] })).toHaveLength(0);
+  });
+
+  it("ligado: nasce às 15:00 (um só), pesquisa pelas referências, roteiro só 15:30, publica só 18:00; o das 12h não é afetado", async () => {
+    const store = novoStore();
+    await store.saveConfig({ ativo: true, modo_teste: false, modo: "automatico", tarde: { ativo: true } });
+    const ch: Record<string, number> = {};
+    const passos = passosFalsos(ch);
+    await tick(store, new BlobsFalsos(), CONTA, { agora: em("14:59"), passos });
+    expect(await store.listarPosts({ kinds: ["tarde"] })).toHaveLength(0);
+    for (let i = 0; i < 3; i++) await tick(store, new BlobsFalsos(), CONTA, { agora: em("15:00"), passos });
+    const tardes = await store.listarPosts({ kinds: ["tarde"] });
+    expect(tardes).toHaveLength(1);
+    expect(ch.pesquisaReferencias).toBe(1);
+    expect(tardes[0].tipo_pauta).toBe("referencia");
+    expect(tardes[0].status).toBe("pesquisado"); // roteiro só às 15:30
+    await tick(store, new BlobsFalsos(), CONTA, { agora: em("15:30"), passos });
+    for (let i = 0; i < 6; i++) await tick(store, new BlobsFalsos(), CONTA, { agora: em("15:31"), passos });
+    let t = (await store.listarPosts({ kinds: ["tarde"] }))[0];
+    expect(["aprovado", "pronto"]).toContain(t.status); // aprovado; checagem final só 17:45
+    await tick(store, new BlobsFalsos(), CONTA, { agora: em("17:45"), passos });
+    t = (await store.listarPosts({ kinds: ["tarde"] }))[0];
+    expect(t.status).toBe("pronto");
+    const publicadosAntes = ch.publicar ?? 0; // o post das 12h já pode ter publicado neste store
+    await tick(store, new BlobsFalsos(), CONTA, { agora: em("17:59"), passos });
+    expect(ch.publicar ?? 0).toBe(publicadosAntes); // 17:59: a tarde ainda não publica
+    await tick(store, new BlobsFalsos(), CONTA, { agora: em("18:00"), passos });
+    expect(ch.publicar).toBe(publicadosAntes + 1); // 18:00: publicou a tarde
+    // o post do dia (12h) já estava encerrado/criado à parte: não ganhou nada da grade da tarde
+    expect(ch.pesquisa ?? 0).toBeGreaterThanOrEqual(1);
+  });
+
+  it("a janela da tarde é a das 18h: às 18:31 sem estar pronto perde a janela", async () => {
+    const store = novoStore();
+    await store.saveConfig({ ativo: true, modo_teste: false, modo: "automatico", tarde: { ativo: true } });
+    const { post } = await store.criarPost({ conta: CONTA, data: DATA, kind: "tarde", status: "roteirizado", modo: "automatico", tipo_pauta: "referencia", pauta: pautaFalsa() });
+    const r = await avancar(await ctxEm(store, "18:31", { tarde: { ativo: true } }), post, { passos: passosFalsos({}) });
+    expect(r.post.status).toBe("perdeu_janela");
+    expect(estadoDaJanela(await store.getConfig(), em("12:10"), "tarde")).toBe("antes");
+  });
+});

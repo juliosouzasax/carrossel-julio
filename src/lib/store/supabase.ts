@@ -2,7 +2,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import { configPadrao, mesclarConfig, type Config } from "../config";
 import { env, envObrigatoria } from "../env";
-import type { Candidatos, ContaIG, LogRegistro, Post, UsoRegistro } from "../types";
+import type { Candidatos, ContaIG, LogRegistro, Post, ReferenciaIG, UsoRegistro } from "../types";
 import type { Blobs, NovoPost, Store } from "./tipos";
 
 export function clienteSupabase(): SupabaseClient {
@@ -46,7 +46,7 @@ export class SupabaseStore implements Store {
     if (error) {
       // 23505 = violação da chave única (conta, data) dos posts "dia": já existe, devolve o existente.
       if ((error as { code?: string }).code === "23505") {
-        const existente = await this.getPostPorData(p.conta, p.data, "dia");
+        const existente = await this.getPostPorData(p.conta, p.data, p.kind);
         if (existente) return { post: existente, criado: false };
       }
       falhou("criar post", error);
@@ -74,6 +74,20 @@ export class SupabaseStore implements Store {
     const { data, error } = await this.db.from("posts").select("*").eq("conta", conta).eq("kind", "reserva").eq("status", "aprovado").eq("pausado", false).order("criado_em", { ascending: true }).limit(1).maybeSingle();
     if (error) falhou("buscar reserva", error);
     return (data as Post) ?? null;
+  }
+
+  async salvarReferencias(rows: ReferenciaIG[]) {
+    if (!rows.length) return 0;
+    const { error } = await this.db.from("referencias_ig").upsert(rows, { onConflict: "username,codigo" });
+    if (error) falhou("salvar referências", error);
+    return rows.length;
+  }
+  async listarReferencias(f: { desdeColetaISO: string; usernames?: string[] }) {
+    let q = this.db.from("referencias_ig").select("*").gte("coletado_em", f.desdeColetaISO);
+    if (f.usernames?.length) q = q.in("username", f.usernames);
+    const { data, error } = await q.limit(2000);
+    if (error) falhou("ler referências", error);
+    return (data ?? []) as ReferenciaIG[];
   }
 
   async salvarCandidatos(c: Omit<Candidatos, "id" | "criado_em">) {

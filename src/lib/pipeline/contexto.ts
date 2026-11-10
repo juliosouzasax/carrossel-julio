@@ -20,7 +20,7 @@ export async function logar(ctx: Ctx, post: Post | null, etapa: string, nivel: "
 // Últimos N dias de posts que já tiveram pauta e roteiro: base para não repetir assunto, headline e estrutura.
 export async function historico(ctx: Ctx, ignorarPostId?: string): Promise<ItemHistorico[]> {
   const desde = somaDias(ctx.agora.data, -ctx.cfg.conteudo.dias_de_historico);
-  const posts = await ctx.store.listarPosts({ desde, kinds: ["dia", "reserva"], limite: 200 });
+  const posts = await ctx.store.listarPosts({ desde, kinds: ["dia", "tarde", "reserva"], limite: 200 });
   return posts
     .filter((p) => p.id !== ignorarPostId && p.pauta && p.roteiro && !["cancelado", "reprovado"].includes(p.status))
     .map((p) => ({

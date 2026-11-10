@@ -83,6 +83,11 @@ export function passosFalsos(chamadas: Record<string, number>, sobrescreve: Part
       const p = await ctx.store.atualizarPost(post.id, { pauta: pautaFalsa(), tipo_pauta: "noticia", status: "pesquisado", justificativa: "j" });
       return { tipo: "ok", post: p! };
     },
+    pesquisaReferencias: async (ctx, post) => {
+      cont("pesquisaReferencias");
+      const p = await ctx.store.atualizarPost(post.id, { pauta: pautaFalsa(), tipo_pauta: "referencia", status: "pesquisado", justificativa: "j" });
+      return { tipo: "ok", post: p! };
+    },
     roteiro: async (ctx, post) => {
       cont("roteiro");
       const r = roteiroFalso();
