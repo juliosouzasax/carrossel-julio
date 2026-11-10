@@ -50,6 +50,8 @@ export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; 
   const palavras = contaPalavras(r.headline_escolhida ?? "");
   if (palavras < LIMITES.headlinePalavrasMin || palavras > LIMITES.headlinePalavrasMax) p.push(`A headline escolhida deve ter de ${LIMITES.headlinePalavrasMin} a ${LIMITES.headlinePalavrasMax} palavras (tem ${palavras}).`);
   if (s[0].titulo.trim() !== (r.headline_escolhida ?? "").trim()) p.push("O título do slide 1 precisa ser exatamente a headline escolhida.");
+  // Julio, 10/11/2026: a capa fala com o público pelo nome — "dentista" ou "clínica" — senão não direciona.
+  if (!/dentista|cl[ií]nica/i.test(r.headline_escolhida ?? "")) p.push(`A headline precisa nomear o público: contenha "dentista(s)" ou "clínica(s)" (veio: "${r.headline_escolhida ?? ""}").`);
 
   s.forEach((x, i) => {
     if (x.n !== i + 1) p.push(`Numeração fora de sequência no slide ${i + 1} (veio n=${x.n}).`);
