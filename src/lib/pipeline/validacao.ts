@@ -105,6 +105,15 @@ export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; 
   for (const l of opc.cfg.identidade.cta_linhas ?? []) if (l && !normalizar(legenda).includes(normalizar(l))) p.push(`A legenda precisa terminar com a chamada fixa da conta; falta a linha "${l}".`);
   if (DEFENSIVO.test(legenda)) p.push(`A legenda tem tom defensivo ("${(DEFENSIVO.exec(legenda) ?? [""])[0]}"): conte o fato com a fonte, sem ressalvas de apuração.`);
   if (PROMESSA_DE_RESULTADO.test(legenda)) p.push("A legenda contém promessa de resultado/faturamento.");
+  if (opc.tipo === "referencia") {
+    // Julio, 10/11/2026: "não quero menção de nenhum deles nos posts". Os perfis de referência são pesquisa de bastidor.
+    const perfis = (opc.cfg.tarde?.perfis ?? []).map((u) => u.toLowerCase());
+    const textoTodo = [...s.map((x) => `${x.titulo} ${x.corpo} ${x.autor ?? ""} ${x.fonte_dado ?? ""} ${(x.itens ?? []).join(" ")}`), legenda].join("\n").toLowerCase();
+    const normal = textoTodo.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    for (const u of perfis) if (normal.includes(u) || normal.includes(u.replace(/_/g, " "))) p.push(`Menção ao perfil de referência "${u}" não é permitida (slides ou legenda).`);
+    if (/@[a-z0-9_.]{3,}/.test(normal)) p.push("Não cite perfis (@) no conteúdo do post das 18h.");
+    if (/\b(reel|reels)\b|\b(views|visualiza[cç][oõ]es)\b|\bcurtidas\b|est[aá] (engajando|bombando|viralizando)/.test(normal)) p.push("Não fale de reel, views, curtidas ou 'está engajando': o post das 18h é na voz do mentor, sem citar a pesquisa.");
+  }
   if (opc.tipo === "noticia" && opc.pauta?.fontes?.length) {
     const algumaFonte = opc.pauta.fontes.some((f) => legenda.toLowerCase().includes(f.dominio.toLowerCase()));
     if (!algumaFonte) p.push("A legenda precisa citar as fontes (domínio de pelo menos uma fonte da pauta).");
