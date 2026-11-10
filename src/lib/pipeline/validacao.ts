@@ -108,7 +108,9 @@ export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; 
     if (!algumaFonte) p.push("A legenda precisa citar as fontes (domínio de pelo menos uma fonte da pauta).");
   }
   if (!r.prompt_imagem_capa?.trim()) p.push("Falta o prompt da imagem da capa.");
-  if (/\b(text|letters|caption|headline)\b/i.test(r.prompt_imagem_capa ?? "") && !/no text/i.test(r.prompt_imagem_capa ?? "")) {
+  // Só acusa quando o prompt PEDE texto na cena ("with text", "showing the headline"); "room for the headline" / "no text" / "text-free" são o uso certo.
+  const pc = r.prompt_imagem_capa ?? "";
+  if (/\b(with|showing|displaying|featuring|reads?|reading|written|include|including)\b[^.]{0,30}\b(text|letters|caption|headline|words|typography)\b/i.test(pc) && !/\b(no|without|free of)\b[^.]{0,12}\b(text|letters|words|typography)\b|text-free|room for|space for|clean (area|space)/i.test(pc)) {
     // o gerador recebe "sem texto" por regra fixa; aqui só avisamos se o prompt pedir texto na cena
     p.push("O prompt da capa parece pedir texto dentro da imagem; os textos são aplicados por código.");
   }
