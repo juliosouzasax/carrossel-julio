@@ -1,0 +1,40 @@
+{
+  "name": "carrossel-julio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pesquisa assuntos em alta, cria carrosséis para dentistas e publica no Instagram todos os dias às 12h (America/Sao_Paulo).",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "demo:render": "tsx scripts/demo-render.ts",
+    "demo": "STORE=memory tsx --env-file=.env.local scripts/demo.ts",
+    "check:modelos": "tsx --env-file=.env.local scripts/check-modelos.ts",
+    "check:instagram": "tsx --env-file=.env.local scripts/check-instagram.ts",
+    "publicar:demo": "tsx --env-file=.env.local scripts/publicar-demo.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.3",
+    "jpeg-js": "^0.4.4",
+    "next": "16.2.10",
+    "pngjs": "^7.0.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "sharp": "^0.35.5",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@fontsource/anton": "^5.3.0",
+    "@fontsource/archivo": "^5.3.0",
+    "@fontsource/pt-serif": "^5.3.0",
+    "@types/node": "^20",
+    "@types/pngjs": "^6.0.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tsx": "^4.20.0",
+    "typescript": "^5",
+    "vitest": "^3.2.7"
+  }
+}
