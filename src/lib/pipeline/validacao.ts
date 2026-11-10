@@ -16,7 +16,7 @@ export const LIMITES = {
   slidesMin: 6,
   slidesMax: 8,
   headlinePalavrasMin: 4,
-  headlinePalavrasMax: 10,
+  headlinePalavrasMax: 12,
   tituloCapa: 64,
   titulo: 120,
   corpo: 260,

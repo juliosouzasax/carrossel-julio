@@ -13,8 +13,8 @@ import type { Pauta, Post, Roteiro } from "../lib/types";
 export const VERSOES = {
   pesquisa: "pesquisa@1.0.0",
   estruturar: "estruturar@1.0.0",
-  roteiro: "roteiro@1.1.1",
-  revisao: "revisao@1.2.0",
+  roteiro: "roteiro@1.2.0",
+  revisao: "revisao@1.3.0",
   recheck: "recheck@1.0.0",
   imagem: "imagem@1.1.0",
 } as const;
@@ -142,15 +142,15 @@ LÓGICA DO POST (notícia)
 - Nos slides de história, FATO com fonte: "a conta perdeu 1,5 milhão de seguidores em dois dias (6%)", "a pré-venda abriu em 09/11 pelo aplicativo". Nada de "segundo as matérias citadas", "não foi verificado", "não se trata de uma avaliação": ressalva de apuração NÃO entra no slide. Se um dado não está nas fontes, ele não existe para você.
 - A conexão com a clínica pode esperar até o slide 5, mas a HEADLINE e a LEGENDA já precisam deixar claro por que um dono de clínica deve ler.
 - Separe fatos de interpretação. Não invente declarações, pesquisas, números, resultados ou histórias de pacientes. Exemplos inventados devem ser marcados como hipotéticos (hipotetico: true).
-- Sem frases genéricas de motivação, sem jargão, sem promessa de faturamento, sem orientação clínica, sem promessa de resultado de tratamento. Nem todo conteúdo é propaganda da mentoria: priorize utilidade.
+- Sem frases genéricas de motivação, sem jargão, sem GARANTIA de resultado numérico ("dobre seu faturamento", "garantido"), sem orientação clínica, sem promessa de resultado de tratamento. Ambição e desejo, sim: mostrar o ganho possível (vender mais, agenda cheia, caixa em dia) com o caminho concreto. A leitura para a clínica (slides 5 e 6) tem que ser ACIONÁVEL: o que fazer amanhã na recepção, no WhatsApp, no financeiro.
 ${tipo === "atemporal" ? "ESTE É UM CONTEÚDO ATEMPORAL: NÃO o apresente como notícia do dia, não use 'hoje', 'ontem', 'nesta semana' nem datas. Aqui a estrutura é: 1 capa → 2 a 3 o problema como ele aparece na rotina (cena concreta, marcada como hipotética se inventada) → 4 a 6 o que fazer → 7 fechamento." : "Cite o acontecimento com precisão e na data correta; não exagere o que as fontes dizem."}
 
-CAPA (prioridade criativa)
-1. Escreva CINCO opções de headline (campo headlines).
-2. Escolha a mais forte (clareza, curiosidade, relevância, fidelidade ao conteúdo) e explique em uma frase.
-3. De 4 a 10 palavras, leitura excelente no celular, sem clickbait enganoso: o carrossel precisa ENTREGAR a promessa. Não use a fórmula "Dentista, você precisa saber disso".
-4. "destaque" = as 1 a 3 palavras-chave do título que vão em dourado.
-5. corpo da capa = o fato em uma linha ("→ Milky Moo + Lindt: pré-venda em 09/11").
+CAPA (prioridade criativa) — a capa VENDE a leitura. Este perfil não é um jornal: a manchete precisa DESPERTAR DESEJO no dono de clínica, prometendo um ganho para ELE a partir do fato.
+1. Escreva CINCO opções de headline (campo headlines), todas no molde "fato → o que isso rende para a clínica": pergunta direta ("O Pix bateu recorde. O que muda para o dentista?"), promessa de uso ("Como usar o recorde do Pix para vender mais na clínica"), ou provocação ("A marca X fez isso e lotou a loja. Sua agenda está vazia por quê?").
+2. Escolha a mais DESEJÁVEL para quem tem clínica (quero ler isso agora), sem perder a fidelidade: o carrossel precisa ENTREGAR o que a capa promete — se a capa pergunta "como aproveitar", os slides 5 e 6 respondem com ações concretas.
+3. De 5 a 12 palavras, leitura excelente no celular. Pode ser ousada e ambiciosa (vender mais, lotar a agenda, fechar mais avaliações, cobrar melhor); NÃO pode mentir, inventar número nem garantir resultado ("dobre", "garantido"). Proibida a manchete fria de portal ("BC divulga recorde do Pix") e a fórmula "Dentista, você precisa saber disso".
+4. "destaque" = as 1 a 3 palavras do título que carregam o desejo (vão em dourado).
+5. corpo da capa = o fato em uma linha, com o número ("→ 319,7 milhões de Pix em um só dia, recorde do BC").
 
 ESTRUTURA: entre 6 e 8 slides, uma ideia por slide, pouco texto. Numerados em sequência a partir de 1.
 ${REGRAS_DE_SLIDE}
@@ -207,7 +207,7 @@ CRITÉRIOS (um item por critério, na ordem):
 1. fatos_e_fontes — cada número, data, nome e citação dos slides e da legenda está nas fontes listadas? Algo inventado ou exagerado é BLOQUEANTE.
 2. datas_e_atualidade — as datas estão certas? Conteúdo antigo está sendo apresentado como notícia do dia?
 3. historia_e_leitura — os slides 2 a 4 CONTAM o fato com dados concretos (como um bom texto de jornalismo de negócios), e a leitura para a clínica aparece até o slide 5 e é honesta, não forçada? A headline e a legenda deixam claro por que um dono de clínica deve ler?
-4. promessa_da_capa — o carrossel entrega o que a capa promete? Há clickbait enganoso?
+4. promessa_da_capa — o carrossel entrega o que a capa promete? A capa deste perfil é PROPOSITALMENTE provocativa e voltada ao desejo do dono de clínica ("como aproveitar X para vender mais"), por decisão do dono: NÃO peça manchete mais neutra, jornalística ou "informativa". Só aponte problema se a capa afirma algo falso, inventa número, garante resultado, ou se os slides não respondem ao que ela promete.
 5. ortografia — erros de português, concordância, acentuação, em slides e legenda.
 6. legibilidade_e_cortes — olhando as imagens: texto cortado, sobreposto, fora da margem, pequeno demais, quebra de linha feia, contraste ruim, foto que não combina com o texto do slide.
 7. coerencia_visual — foto presente nos slides de história; alternância claro/escuro; dourado, tipografia e assinatura consistentes; ${args.cfg.identidade.rotulo_ilustracao ? `rótulo "${args.cfg.identidade.rotulo_ilustracao}" na capa quando a imagem gerada alude a fato real` : "NÃO exija rótulo de ilustração/\"imagem ilustrativa\" em nenhum slide: esta conta não usa esse rótulo, por decisão do dono"}; exemplo inventado marcado como hipotético.
