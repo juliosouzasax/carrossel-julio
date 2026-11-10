@@ -13,8 +13,8 @@ import type { Pauta, Post, Roteiro } from "../lib/types";
 export const VERSOES = {
   pesquisa: "pesquisa@1.0.0",
   estruturar: "estruturar@1.0.0",
-  roteiro: "roteiro@1.1.0",
-  revisao: "revisao@1.1.0",
+  roteiro: "roteiro@1.1.1",
+  revisao: "revisao@1.2.0",
   recheck: "recheck@1.0.0",
   imagem: "imagem@1.1.0",
 } as const;
@@ -172,7 +172,7 @@ IMAGENS (escreva os prompts em INGLÊS, descrevendo CENA; o texto é aplicado po
 - prompt_imagem_capa: a cena mais forte do assunto, vertical, luz dramática, metade de baixo mais escura e limpa para receber a headline.
 - prompts_imagens_extras: UMA cena por slide com foto que NÃO use foto real, até ${Math.max(0, cfg.imagens.max_por_post - 1)} prompts, cada uma mostrando um ângulo diferente do mesmo assunto (detalhe do produto, ambiente, bastidor, uso).
 - ${blocoFotos}
-- ilustrativo = true quando a imagem GERADA representa ou alude a um acontecimento real (a capa gerada levará o rótulo de ilustração; foto real leva crédito).
+- ilustrativo = true quando a imagem GERADA representa ou alude a um acontecimento real (${cfg.identidade.rotulo_ilustracao ? `a capa gerada levará o rótulo "${cfg.identidade.rotulo_ilustracao}"` : "esta conta NÃO exibe rótulo de ilustração na arte, por decisão do dono; não peça nem escreva esse rótulo"}; foto real leva crédito).
 
 ${SEGURANCA}`;
 
@@ -210,10 +210,12 @@ CRITÉRIOS (um item por critério, na ordem):
 4. promessa_da_capa — o carrossel entrega o que a capa promete? Há clickbait enganoso?
 5. ortografia — erros de português, concordância, acentuação, em slides e legenda.
 6. legibilidade_e_cortes — olhando as imagens: texto cortado, sobreposto, fora da margem, pequeno demais, quebra de linha feia, contraste ruim, foto que não combina com o texto do slide.
-7. coerencia_visual — foto presente nos slides de história; alternância claro/escuro; dourado, tipografia e assinatura consistentes; rótulo de ilustração na capa quando a imagem alude a fato real; exemplo inventado marcado como hipotético.
+7. coerencia_visual — foto presente nos slides de história; alternância claro/escuro; dourado, tipografia e assinatura consistentes; ${args.cfg.identidade.rotulo_ilustracao ? `rótulo "${args.cfg.identidade.rotulo_ilustracao}" na capa quando a imagem gerada alude a fato real` : "NÃO exija rótulo de ilustração/\"imagem ilustrativa\" em nenhum slide: esta conta não usa esse rótulo, por decisão do dono"}; exemplo inventado marcado como hipotético.
 8. repeticao — headline, exemplo ou estrutura parecidos com o histórico.
-9. afirmacoes_enganosas — promessa de faturamento, orientação clínica, tragédia como gancho, acusação sem prova, polarização, material por mensagem prometido.
+9. afirmacoes_enganosas — promessa de faturamento dentro do CONTEÚDO (ex.: "dobre seu faturamento", "garanto resultado"), orientação clínica, tragédia como gancho, acusação sem prova, polarização, material por mensagem prometido. As linhas da CHAMADA FINAL FIXA (abaixo) não entram neste critério.
 10. tom — ressalvas de apuração dentro do slide ou da legenda ("não verificado", "segundo as matérias citadas", "não se trata de avaliação") são AJUSTE: o texto deve afirmar o que as fontes afirmam, com a fonte, ou cortar o dado.
+
+CHAMADA FINAL FIXA DA CONTA (definida pelo dono, FORA do seu escopo — não é promessa de resultado, é o convite padrão do perfil; nunca peça para remover, trocar ou suavizar, no slide final nem na legenda): ${args.cfg.identidade.cta_linhas.map((l) => `"${l}"`).join(" / ")}.
 
 NÃO peça que o texto fique mais cauteloso ou acrescente ressalvas: peça que afirme só o que está nas fontes. Cautela boa é cortar o dado sem fonte, não enfeitar o slide com avisos.
 
