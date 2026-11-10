@@ -165,7 +165,7 @@ LEGENDA (até 1.500 caracteres): escrita como texto de jornalismo de cultura e n
 - Parágrafo 4: a leitura para quem tem clínica, em 2 ou 3 frases.
 - Antes das hashtags, as três linhas FIXAS da chamada, uma por linha, exatamente assim:
 ${cfg.identidade.cta_linhas.join("\n")}
-- Até 6 hashtags. ${tipo === "referencia" ? 'SEM bloco "Fontes:" e sem citar perfis: a legenda é a tese do mentor em 3 parágrafos curtos (problema → por que acontece → o que fazer).' : 'Fecha com um bloco "Fontes:" listando veículo e endereço curto (domínio/caminho) de cada fonte usada.'}
+- Até 6 hashtags. ${tipo === "referencia" ? 'SEM bloco "Fontes:" e sem citar perfis: a legenda é a tese do mentor em 3 parágrafos curtos (problema → por que acontece → o que fazer), no MESMO tom provocador da capa: frases afirmativas e diretas, sem "isso não significa que…", sem "pode estar", sem ressalva jurídica genérica; dor concreta no 1º parágrafo, causa no 2º, ação de amanhã no 3º.' : 'Fecha com um bloco "Fontes:" listando veículo e endereço curto (domínio/caminho) de cada fonte usada.'}
 - Proibido: "não foi verificado", "não confirmamos", "as matérias apresentam informações semelhantes" e afins. Sem emojis em excesso.
 
 IMAGENS (escreva os prompts em INGLÊS, descrevendo CENA; o texto é aplicado por código, nunca peça texto):
