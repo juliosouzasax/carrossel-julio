@@ -100,6 +100,7 @@ export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; 
   if (legenda.length > LIMITES.legenda) p.push(`A legenda passa de ${LIMITES.legenda} caracteres.`);
   if (contaHashtags(legenda) > LIMITES.hashtags) p.push(`A legenda passa de ${LIMITES.hashtags} hashtags.`);
   if (PROMESSA_DE_MATERIAL.test(legenda)) p.push("A legenda promete material/link que não existe.");
+  for (const l of opc.cfg.identidade.cta_linhas ?? []) if (l && !normalizar(legenda).includes(normalizar(l))) p.push(`A legenda precisa terminar com a chamada fixa da conta; falta a linha "${l}".`);
   if (DEFENSIVO.test(legenda)) p.push(`A legenda tem tom defensivo ("${(DEFENSIVO.exec(legenda) ?? [""])[0]}"): conte o fato com a fonte, sem ressalvas de apuração.`);
   if (PROMESSA_DE_RESULTADO.test(legenda)) p.push("A legenda contém promessa de resultado/faturamento.");
   if (opc.tipo === "noticia" && opc.pauta?.fontes?.length) {

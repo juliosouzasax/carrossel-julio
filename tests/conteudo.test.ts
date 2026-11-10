@@ -46,7 +46,7 @@ describe("validação do roteiro (código, não prompt)", () => {
     r.headline_escolhida = "Quatro palavras na headline";
     r.slides[0].titulo = r.headline_escolhida;
     r.slides[0].corpo = "subline curta";
-    r.legenda = "Muitas clínicas perdem pacientes por demora na resposta e por falta de processo no atendimento. Neste carrossel mostramos três ajustes simples para organizar a rotina da recepção, medir o tempo de resposta e reduzir faltas. Salve para consultar depois e compartilhe com quem cuida do atendimento da sua clínica.\n\n#odontologia #gestaodeclinicas #dentista #atendimento #marketingodontologico";
+    r.legenda = "Muitas clínicas perdem pacientes por demora na resposta e por falta de processo no atendimento. Neste carrossel mostramos três ajustes simples para organizar a rotina da recepção, medir o tempo de resposta e reduzir faltas. Salve esse post\nEncaminhe para um dentista ou dono de clínica\nMe chame no direct para elevar seu faturamento\n\n#odontologia #gestaodeclinicas #dentista #atendimento #marketingodontologico";
     return r;
   };
   it("roteiro válido passa", () => {

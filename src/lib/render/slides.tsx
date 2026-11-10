@@ -543,13 +543,26 @@ function Dados({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
   );
 }
 
+// Fechamento: título curto do redator + as linhas FIXAS da conta (identidade.cta_linhas). Corpo do redator é ignorado.
 function Cta({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
   const p = paleta(ctx.identidade, "cta");
+  const linhas = (ctx.identidade.cta_linhas ?? []).filter(Boolean).slice(0, 4);
   return (
     <Moldura ctx={ctx} p={p} n={slide.n} centro>
       <Barra p={p} largura={130} />
-      <Manchete palavras={palavrasComDestaque(slide.titulo, slide.destaque)} tamanho={Math.min(tamanhoManchete(slide.titulo, false), 110)} p={p} />
-      <Corpo texto={slide.corpo} p={p} tamanho={Math.min(tamanhoCorpo(slide.corpo) + 2, 40)} />
+      <Manchete palavras={palavrasComDestaque(slide.titulo, slide.destaque)} tamanho={Math.min(tamanhoManchete(slide.titulo, false), 100)} p={p} />
+      {linhas.length ? (
+        <div style={{ display: "flex", flexDirection: "column", marginTop: 44 }}>
+          {linhas.map((l, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "flex-start", marginBottom: i === linhas.length - 1 ? 0 : 24 }}>
+              <div style={{ display: "flex", width: 72, fontFamily: "PT Serif", fontWeight: 700, fontSize: 46, lineHeight: 1.1, color: p.ouro }}>{i + 1}.</div>
+              <div style={{ display: "flex", flex: 1, fontFamily: "Archivo", fontWeight: 600, fontSize: 38, lineHeight: 1.24, color: p.fg, paddingTop: 4 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <Corpo texto={slide.corpo} p={p} tamanho={Math.min(tamanhoCorpo(slide.corpo) + 2, 40)} />
+      )}
       <div style={{ display: "flex", alignSelf: "flex-start", marginTop: 54, border: `4px solid ${p.fg}`, borderRadius: 60, padding: "18px 40px", fontFamily: "Archivo", fontWeight: 800, fontSize: 32, color: p.fg }}>{ctx.identidade.conta}</div>
     </Moldura>
   );

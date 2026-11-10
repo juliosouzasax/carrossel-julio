@@ -38,7 +38,7 @@ export const slidesDeExemplo: Slide[] = [
   { ...base, n: 4, papel: "aplicacao", layout: "comparativo", titulo: "Resposta que avança vs resposta que devolve", colunas: [{ titulo: "Avança", itens: ["Temos quinta às 15h, serve?", "Já deixo reservado para você"] }, { titulo: "Devolve", itens: ["Venha conhecer a clínica", "Os valores variam"] }], corpo: "Toda mensagem precisa terminar em um próximo passo." },
   { ...base, n: 5, papel: "exemplo", layout: "imagem", titulo: "Uma clínica, duas respostas", corpo: "Mesma pergunta, duas respostas. A primeira marca avaliação. A segunda devolve o trabalho ao paciente.", destaque: "duas respostas", imagem_idx: 0, hipotetico: true },
   { ...base, n: 6, papel: "acao", layout: "checklist", titulo: "Antes de investir em anúncio, responda:", destaque: "responda:", itens: ["Quanto tempo leva a 1ª resposta?", "Quem responde fora do horário?", "Onde o retorno fica registrado?"], corpo: "Se travou numa resposta, o gargalo é aí." },
-  { ...base, n: 7, papel: "fechamento", layout: "cta", titulo: "Salve e mande para quem responde seu WhatsApp", corpo: "Siga para ver o próximo.", destaque: "Salve" },
+  { ...base, n: 7, papel: "fechamento", layout: "cta", titulo: "Antes de investir em anúncio", corpo: "", destaque: "anúncio" },
 ];
 
 async function main() {

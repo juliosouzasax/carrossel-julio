@@ -120,7 +120,10 @@ export const ConfigSchema = z.object({
       kicker_centro: z.string().default("@juliosouza_costa"),
       assinatura: z.string().default("Julio Souza"),
       conta: z.string().default("@juliosouza_costa"),
-      rotulo_ilustracao: z.string().default("Ilustração gerada por IA"),
+      // Vazio = não escreve nada na capa gerada por IA (decisão do Julio, 09/11/2026). Foto real continua com crédito.
+      rotulo_ilustracao: z.string().default(""),
+      // Fechamento FIXO do carrossel (último slide e fim da legenda). O redator não reescreve isto.
+      cta_linhas: z.array(z.string()).default(["Salve esse post", "Encaminhe para um dentista ou dono de clínica", "Me chame no direct para elevar seu faturamento"]),
       estilo_imagem: z
         .string()
         .default(

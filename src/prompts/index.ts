@@ -107,7 +107,7 @@ LAYOUTS SÓ TEXTO (para a leitura/lição, slides 5 em diante, ou quando não ho
 - destaque: uma frase forte (titulo, até 90) + corpo opcional.
 - imagem: manchete + corpo com imagem de apoio (imagem_idx).
 - capa: SEMPRE o slide 1. titulo = a headline; corpo = subline curta (até 48 caracteres) com o fato em uma linha; rotulo opcional.
-- cta: último slide. titulo curto + corpo (até 90) coerente com chamada_final.
+- cta: último slide. Só o titulo (curto, até 50 caracteres, um fechamento ligado ao assunto, ex.: "Antes de mudar a marca"). O corpo é IGNORADO: as linhas de chamada são fixas da conta e entram por código.
 Campos que o layout não usa ficam vazios ("" , [] ou null). Sem emojis nos slides. Português do Brasil.
 rotulo: etiqueta curta de seção em maiúsculas (até 18 caracteres), como "MARKETING", "CONSUMO", "GESTÃO", "CULTURA POP"; use nos slides de história e na capa quando ajudar a situar.`;
 
@@ -156,12 +156,13 @@ ESTRUTURA: entre 6 e 8 slides, uma ideia por slide, pouco texto. Numerados em se
 ${REGRAS_DE_SLIDE}
 Use "foto" / "foto_escura" / "citacao" nos slides de história (2 a 4) e pelo menos UM layout com foto também na leitura (5 a 6). Alterne claro e escuro. Varie a estrutura para não parecer cópia dos posts recentes (veja os layouts do histórico). Semente de variação de hoje: ${args.semente}.
 
-CHAMADA FINAL: escolha entre salvar, compartilhar, comentar ou seguir, combinando com o conteúdo. NÃO prometa material por mensagem, PDF, link ou "comente X que eu envio": essa entrega não existe.
+CHAMADA FINAL (fixa da conta, não reescreva nem parafraseie): ${cfg.identidade.cta_linhas.map((l) => `"${l}"`).join(" / ")}. No campo chamada_final use "salvar". Fora dessas linhas, NÃO prometa material por mensagem, PDF ou link.
 
 LEGENDA (até 1.500 caracteres): escrita como texto de jornalismo de cultura e negócios, direta e sem ressalvas de apuração.
 - Parágrafos 1 a 3: a história, com os dados e as datas (pode trazer um detalhe que não coube nos slides).
 - Parágrafo 4: a leitura para quem tem clínica, em 2 ou 3 frases.
-- Última linha antes das hashtags: a chamada (salvar/compartilhar/comentar/seguir).
+- Antes das hashtags, as três linhas FIXAS da chamada, uma por linha, exatamente assim:
+${cfg.identidade.cta_linhas.join("\n")}
 - Até 6 hashtags. Fecha com um bloco "Fontes:" listando veículo e endereço curto (domínio/caminho) de cada fonte usada.
 - Proibido: "não foi verificado", "não confirmamos", "as matérias apresentam informações semelhantes" e afins. Sem emojis em excesso.
 
