@@ -85,6 +85,9 @@ export const ConfigSchema = z.object({
       max_por_post: z.number().int().min(1).max(8).default(7),
       // Usar a foto de divulgação das matérias (com crédito) antes de gerar por IA. Autorizado pelo dono da conta em 09/11/2026.
       fotos_reais: z.boolean().default(true),
+      // Logo/identidade visual de empresa CITADA na pauta pode aparecer na imagem (Nubank, Shopee…). Autorizado pelo
+      // dono da conta em 11/11/2026, que assumiu a responsabilidade. false = volta a "sem logos legíveis".
+      logos_de_marcas: z.boolean().default(true),
       max_fotos_reais: z.number().int().min(0).max(4).default(3),
     })
     .default({}),
@@ -145,7 +148,7 @@ export const ConfigSchema = z.object({
       cartao_escuro: z.string().default("#181820"),
       kicker_esquerda: z.string().default("Powered by Prime 90D"),
       kicker_centro: z.string().default("@juliosouza_costa"),
-      assinatura: z.string().default("Julio Souza"),
+      assinatura: z.string().default("Julio Costa"),
       conta: z.string().default("@juliosouza_costa"),
       // Vazio = não escreve nada na capa gerada por IA (decisão do Julio, 09/11/2026). Foto real continua com crédito.
       rotulo_ilustracao: z.string().default(""),
@@ -170,7 +173,7 @@ export const ConfigSchema = z.object({
       publico: z
         .string()
         .default(
-          "Dentistas, principalmente donos de clínica, no Brasil. Autor: Julio Souza, empresário e mentor de dentistas.",
+          "Dentistas, principalmente donos de clínica, no Brasil. Autor: Julio Costa, empresário e mentor de dentistas.",
         ),
       areas: z
         .array(z.string())
