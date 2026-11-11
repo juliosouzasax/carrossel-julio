@@ -16,7 +16,7 @@ export const VERSOES = {
   roteiro: "roteiro@1.2.0",
   revisao: "revisao@1.3.0",
   referencias: "referencias@1.0.0",
-  recheck: "recheck@1.0.0",
+  recheck: "recheck@1.1.0",
   imagem: "imagem@1.3.0",
 } as const;
 
@@ -286,10 +286,11 @@ ${historicoTexto(args.historico)}`;
 export function promptRecheck(args: { dataHoje: string; pauta: Pauta }) {
   const instrucoes = `Você faz a checagem final de atualidade, minutos antes de uma publicação. Use a BUSCA NA WEB.
 Verifique se o fato central da pauta continua correto e se saiu alguma correção, desmentido, retratação ou desenvolvimento relevante nas últimas horas.
-- ainda_valido = false se o fato central foi desmentido, corrigido de forma relevante ou ficou impreciso.
+- ainda_valido = false SOMENTE se alguma afirmação da pauta ficou FALSA: desmentido, retratação, número ou fato central corrigido, evento cancelado. Cite no resumo qual afirmação ficou errada.
+- Mudança de detalhe que NÃO contradiz a pauta (horário antecipado, prazo estendido, mais participantes, condições extras) NÃO invalida: ainda_valido = true e houve_novo_desenvolvimento = true, com o detalhe no resumo.
 - houve_novo_desenvolvimento = true se há novidade importante (mesmo que o fato continue válido).
 - fontes_novas: URLs reais que você viu na busca (nunca invente).
-Seja conservador: na dúvida entre validar e bloquear, explique a dúvida no resumo e marque ainda_valido = false apenas se houver motivo concreto.
+Regra de decisão: se o seu próprio resumo diz que o fato "continua válido", então ainda_valido = true. Bloquear uma publicação por detalhe secundário custa mais do que publicar com o detalhe atualizado.
 ${SEGURANCA}`;
   const entrada = `HOJE: ${args.dataHoje}
 PAUTA: ${args.pauta.titulo}

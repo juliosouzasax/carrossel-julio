@@ -79,7 +79,11 @@ async function marcar(ctx: Ctx, post: Post, status: StatusPost, motivo: string |
 export async function acionarFallback(ctx: Ctx, post: Post, motivo: string): Promise<Post> {
   const { store } = ctx;
   const usos = post.tentativas["fallback"] ?? 0;
-  const base = { tentativas: { ...post.tentativas, fallback: usos + 1 }, erro: null, proxima_tentativa_em: null };
+  // Plano B acionado DEPOIS do prazo de revisão (ex.: checagem final das 11:45 reprovou) não pode ser morto pela
+  // própria regra do prazo no ciclo seguinte — foi assim que 11/11 ficou sem post. Marca o prazo como já tratado.
+  const h = horariosDe(ctx.cfg, post.kind);
+  const prazo = (post.kind === "dia" || post.kind === "tarde") && ctx.agora.minutos >= minutosDe(h.prazo_revisao) ? { prazo: 1 } : ({} as Record<string, number>);
+  const base = { tentativas: { ...post.tentativas, ...prazo, fallback: usos + 1 }, erro: null, proxima_tentativa_em: null };
   if (usos >= 2 || (usos >= 1 && post.tipo_pauta === "atemporal")) {
     await logar(ctx, post, "fallback", "erro", `Sem conteúdo seguro (${motivo}). Nada será publicado hoje.`);
     const s = await store.atualizarPost(post.id, { ...base, status: "suspenso", motivo: `Sem conteúdo seguro para hoje: ${motivo}` });
