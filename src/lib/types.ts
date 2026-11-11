@@ -163,7 +163,18 @@ export type Recheck = {
   fontes_novas: string[];
 };
 
+export type PublicacaoTikTok = {
+  publish_id?: string | null;
+  status?: "PROCESSING_UPLOAD" | "PROCESSING_DOWNLOAD" | "SEND_TO_USER_INBOX" | "PUBLISH_COMPLETE" | "FAILED" | null;
+  post_id?: string | null;
+  privacidade?: string | null;
+  erro?: string | null;
+  iniciado_em?: string | null;
+  conferido_em?: string | null;
+};
+
 export type Publicacao = {
+  tiktok?: PublicacaoTikTok; // espelho no TikTok (melhor esforço; nunca bloqueia o Instagram)
   programada_para?: string | null; // ISO
   container_ids?: string[];
   container_carrossel_id?: string | null;

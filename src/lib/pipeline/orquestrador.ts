@@ -9,6 +9,7 @@ import { executarImagens, regenerarImagem } from "./imagens";
 import { backoffMs, executarPublicacao, type DepsPublicar, type ResultadoPublicar } from "./publicar";
 import { executarPesquisa, pautaAtemporal, type ResultadoPesquisa } from "./pesquisa";
 import { executarPesquisaReferencias } from "./referencias";
+import { atualizarStatusTikTok } from "./tiktokPublicar";
 import { executarRender } from "./renderizar";
 import { executarRecheck, executarRevisao } from "./revisao";
 import { executarRoteiro } from "./roteiro";
@@ -341,6 +342,11 @@ export async function tick(store: Store, blobs: Blobs, conta: string, op: Opcoes
         executados.push({ post: p.id, kind: p.kind, acao: r.acao });
         if (ehTerminal(atual) || antes === atual.status + "|" + atual.atualizado_em) break;
       }
+    }
+    // Espelho no TikTok: confere o status do que foi enviado hoje e ainda está processando.
+    if (!somenteTeste && cfg.tiktok.ativo) {
+      const publicados = (await store.listarPosts({ desde: agora.data, ate: agora.data, kinds: ["dia", "tarde"], limite: 10 })).filter((p) => p.status === "publicado" && p.publicacao.tiktok?.publish_id && !["PUBLISH_COMPLETE", "FAILED"].includes(p.publicacao.tiktok.status ?? ""));
+      for (const p of publicados) await atualizarStatusTikTok(ctx, p);
     }
     const aviso = somenteTeste ? " (sistema desligado/pausado: só posts de teste são processados)" : "";
     return { ok: true, mensagem: `Ciclo concluído (${executados.length} ação/ões)${aviso}.`, passos: executados };

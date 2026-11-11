@@ -121,6 +121,15 @@ export const ConfigSchema = z.object({
 
   // Estilo visual: estrutura e tipografia inspiradas em carrosséis editoriais (manchete condensada gigante,
   // frases-tese em serifa, cards alternando fundo escuro e claro), nas cores da identidade do Julio.
+  // Espelho no TikTok (carrossel de fotos pela Content Posting API). Nasce desligado; sem auditoria do app, sai privado.
+  tiktok: z
+    .object({
+      ativo: z.boolean().default(false),
+      privacidade: z.enum(["PUBLIC_TO_EVERYONE", "MUTUAL_FOLLOW_FRIENDS", "FOLLOWER_OF_CREATOR", "SELF_ONLY"]).default("SELF_ONLY"),
+      auto_musica: z.boolean().default(false),
+      desabilitar_comentarios: z.boolean().default(false),
+    })
+    .default({}),
   identidade: z
     .object({
       escuro: z.string().default("#101014"),

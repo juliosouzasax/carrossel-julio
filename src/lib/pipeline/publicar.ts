@@ -2,6 +2,7 @@ import { clienteInstagram, ErroInstagram, garantirConta, imagemPublicaOk, type C
 import { instanteSP } from "../tempo";
 import type { Post, Publicacao } from "../types";
 import { logar, type Ctx } from "./contexto";
+import { publicarPostNoTikTok } from "./tiktokPublicar";
 
 export type DepsPublicar = {
   cliente?: ClienteIG;
@@ -157,6 +158,7 @@ export async function executarPublicacao(ctx: Ctx, postInicial: Post, deps: Deps
     pub = { ...pub, media_id: mediaId, permalink: d.permalink, confirmada_em: d.timestamp ?? new Date().toISOString(), ultimo_erro: null };
     post = await salvar(ctx, post, pub, { status: "publicado", erro: null });
     await logar(ctx, post, "publicacao", "info", "Publicado no Instagram.", { media_id: mediaId, permalink: d.permalink });
+    post = await publicarPostNoTikTok(ctx, post); // espelho; nunca desfaz o Instagram
     return { resultado: "publicado", post, mensagem: `Publicado: ${d.permalink ?? mediaId}` };
   } catch (e) {
     const err = e as Error;
