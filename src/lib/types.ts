@@ -88,8 +88,11 @@ export type ReferenciaIG = {
   coletado_em: string;
 };
 
+export type EstiloCapa = "hiperbole" | "cartao" | "tipografia";
+
 export type Slide = {
   n: number;
+  estilo?: EstiloCapa | null; // só na capa: hiperbole (foto escura), cartao (claro, foto em caixa), tipografia (só texto)
   papel: "capa" | "contexto" | "aprendizado" | "aplicacao" | "exemplo" | "acao" | "fechamento" | "extra";
   layout: "capa" | "foto" | "foto_escura" | "citacao" | "tese" | "texto" | "imagem" | "destaque" | "lista" | "comparativo" | "checklist" | "dados" | "cta";
   titulo: string;

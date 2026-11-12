@@ -216,7 +216,74 @@ function Corpo({ texto, p, tamanho }: { texto: string; p: Paleta; tamanho?: numb
   );
 }
 
+// Assinatura do autor no topo do cartão claro (iniciais em círculo dourado + nome + conta), como nos cartões de notícia do nicho.
+function Autor({ ctx, cor, apagado, ouro }: { ctx: ContextoRender; cor: string; apagado: string; ouro: string }) {
+  const nome = ctx.identidade.assinatura;
+  const ini = nome.split(/\s+/).filter(Boolean).slice(0, 2).map((x) => x[0]?.toUpperCase() ?? "").join("");
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 74, height: 74, borderRadius: 37, background: ouro, color: "#FFFFFF", fontFamily: "Anton", fontSize: 32, letterSpacing: 1 }}>{ini}</div>
+      <div style={{ display: "flex", flexDirection: "column", marginLeft: 18 }}>
+        <div style={{ display: "flex", fontFamily: "Archivo", fontWeight: 800, fontSize: 30, color: cor }}>{nome}</div>
+        <div style={{ display: "flex", fontFamily: "Archivo", fontWeight: 500, fontSize: 22, color: apagado }}>{ctx.identidade.conta}</div>
+      </div>
+    </div>
+  );
+}
+
+function tamanhoCartao(t: string): number {
+  const n = t.length;
+  return n <= 36 ? 84 : n <= 52 ? 74 : n <= 70 ? 64 : 56;
+}
+
+// CAPA CARTÃO (claro): assinatura, headline preta com destaque dourado, subline sublinhada, imagem em caixa arredondada.
+function CapaCartao({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
+  const p = paleta(ctx.identidade, "foto");
+  const alturaFoto = 640;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", width: LARGURA, height: ALTURA, background: p.bg, position: "relative", paddingLeft: MARGEM, paddingRight: MARGEM }}>
+      <Kicker ctx={ctx} p={p} />
+      <div style={{ display: "flex", marginTop: 54 }}>
+        <Autor ctx={ctx} cor={p.fg} apagado={p.apagado} ouro={p.ouro} />
+      </div>
+      <div style={{ display: "flex", marginTop: 40 }}>
+        <Lider palavras={palavrasComDestaque(slide.titulo, slide.destaque)} tamanho={tamanhoCartao(slide.titulo)} cor={p.fg} ouro={p.ouro} />
+      </div>
+      {slide.corpo ? <div style={{ display: "flex", marginTop: 26, fontFamily: "Archivo", fontWeight: 600, fontSize: 34, lineHeight: 1.25, color: "#2A2A2E", textDecoration: "underline" }}>{slide.corpo}</div> : null}
+      <div style={{ display: "flex", flex: 1 }} />
+      <div style={{ display: "flex", position: "relative", width: LARGURA - 2 * MARGEM, height: alturaFoto, borderRadius: 28, overflow: "hidden", background: ctx.identidade.escuro }}>
+        <Imagem ctx={ctx} largura={LARGURA - 2 * MARGEM} altura={alturaFoto} foco={0.45} />
+      </div>
+      <div style={{ display: "flex", paddingTop: 30, paddingBottom: 56 }}>
+        <Rodape n={slide.n} total={ctx.total} ctx={ctx} p={p} />
+      </div>
+    </div>
+  );
+}
+
+// CAPA TIPOGRAFIA (claro): só a manchete, gigante, com o trecho-chave em dourado e uma seta; nenhuma imagem.
+function CapaTipografia({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
+  const p = paleta(ctx.identidade, "texto");
+  const tam = Math.min(tamanhoManchete(slide.titulo, true) + 10, 150);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", width: LARGURA, height: ALTURA, background: p.bg, position: "relative", paddingLeft: MARGEM, paddingRight: MARGEM }}>
+      <Kicker ctx={ctx} p={p} />
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "center" }}>
+        <div style={{ display: "flex", width: 120, height: 10, background: p.ouro, marginBottom: 44 }} />
+        <Manchete palavras={palavrasComDestaque(slide.titulo, slide.destaque)} tamanho={tam} p={p} />
+        {slide.corpo ? <div style={{ display: "flex", marginTop: 40, fontFamily: "Archivo", fontWeight: 600, fontSize: 36, lineHeight: 1.25, color: "#2A2A2E", textDecoration: "underline" }}>{slide.corpo}</div> : null}
+        <div style={{ display: "flex", marginTop: 60, fontFamily: "Anton", fontSize: 120, lineHeight: 0.9, color: p.fg }}>→</div>
+      </div>
+      <div style={{ display: "flex", paddingBottom: 56 }}>
+        <Rodape n={slide.n} total={ctx.total} ctx={ctx} p={p} />
+      </div>
+    </div>
+  );
+}
+
 function Capa({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
+  if (slide.estilo === "cartao" && ctx.imagemDataUri) return <CapaCartao slide={slide} ctx={ctx} />;
+  if (slide.estilo === "tipografia") return <CapaTipografia slide={slide} ctx={ctx} />;
   const p = paleta(ctx.identidade, "capa");
   const id = ctx.identidade;
   return (

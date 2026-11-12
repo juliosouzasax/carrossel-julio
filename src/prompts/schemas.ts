@@ -45,6 +45,7 @@ const SLIDE = obj({
   fonte_dado: nulavel(str),
   hipotetico: bool,
   imagem_idx: nulavel(int),
+  estilo: nulavel(en(["hiperbole", "cartao", "tipografia"])),
 });
 
 export const SCHEMA_ROTEIRO = {

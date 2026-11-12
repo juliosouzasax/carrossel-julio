@@ -8,12 +8,12 @@
 //                       assunto, não uma metáfora; legenda direta, sem ressalvas de apuração; revisão alinhada.
 
 import type { Config } from "../lib/config";
-import type { Pauta, Post, Roteiro } from "../lib/types";
+import type { EstiloCapa, Pauta, Post, Roteiro } from "../lib/types";
 
 export const VERSOES = {
   pesquisa: "pesquisa@1.0.0",
   estruturar: "estruturar@1.0.0",
-  roteiro: "roteiro@1.4.0",
+  roteiro: "roteiro@1.5.0",
   revisao: "revisao@1.3.0",
   referencias: "referencias@1.0.0",
   recheck: "recheck@1.1.0",
@@ -33,11 +33,17 @@ Referências de posicionamento (para entender o nível e o tom, sem copiar nada)
 EVITAR: ${cfg.conteudo.evitar}.`;
 }
 
-export type ItemHistorico = { data: string; titulo: string; headline: string; layouts: string[]; capa?: string };
+export type ItemHistorico = { data: string; titulo: string; headline: string; layouts: string[]; capa?: string; capa_estilo?: string };
 
 function historicoTexto(h: ItemHistorico[]): string {
   if (!h.length) return "(sem histórico ainda)";
   return h.map((x) => `- ${x.data}: ${x.titulo} | headline: "${x.headline}" | layouts: ${x.layouts.join(",")}`).join("\n");
+}
+
+function estiloCapaTexto(e: EstiloCapa): string {
+  if (e === "cartao") return '"cartao" — capa CLARA no molde dos cartões de notícia do nicho: fundo creme, assinatura do autor no topo, headline grande em preto com o trecho-chave em dourado, subline SUBLINHADA (campo corpo, até 60 caracteres, estilo "Segue o fio!" / "Talvez esteja custando caro para a sua clínica.") e a imagem numa caixa arredondada embaixo. A imagem aqui é uma CENA LIMPA, iluminada e legível em miniatura (um produto, um ambiente de clínica, uma pessoa genérica em ação, a marca citada), fotorrealista; pode ter exagero, mas NÃO precisa da metade de baixo escura.';
+  if (e === "tipografia") return '"tipografia" — capa SÓ DE TEXTO no molde das referências (fundo claro, headline gigante em preto com número/palavra-chave em dourado, seta no fim). NÃO há imagem na capa: deixe prompt_imagem_capa vazio ("") e capriche na headline — número concreto ou promessa clara ("3 formas de fechar mais sem dar desconto", "Seu paciente faltou hoje? Isso custou R$ 800"). O corpo (subline) é opcional e curto.';
+  return '"hiperbole" — a capa fotográfica escura com a metáfora exagerada descrita abaixo.';
 }
 
 // As últimas capas (cena descrita ao gerador), mais recentes primeiro, para a próxima não parecer a mesma.
@@ -124,6 +130,7 @@ export function promptRoteiro(args: {
   tipo: "noticia" | "atemporal" | "referencia";
   historico: ItemHistorico[];
   semente: string;
+  estiloCapa?: EstiloCapa;
   correcoes?: string[];
   roteiroAnterior?: Roteiro | null;
   fotosReais?: { indice: number; descricao: string }[];
@@ -155,7 +162,7 @@ ${tipo === "referencia" ? `ESTE É O POST DAS 18h. O TEMA foi tirado do que est�
 CAPA (prioridade criativa) — a capa VENDE a leitura. Este perfil não é um jornal: a manchete precisa DESPERTAR DESEJO no dono de clínica, prometendo um ganho para ELE a partir do fato.
 1. Escreva CINCO opções de headline (campo headlines), todas no molde "fato → o que isso rende para a clínica" e todas dirigidas ao público pelo nome (dentista / clínica): pergunta direta ("O Pix bateu recorde. O que muda para o dentista?"), promessa de uso ("Como usar o recorde do Pix para vender mais na clínica"), ou provocação ("A marca X fez isso e lotou a loja. E a agenda da sua clínica?").
 2. Escolha a mais DESEJÁVEL para quem tem clínica (quero ler isso agora) — a que promete VENDER/FECHAR/CRESCER ganha da que promete organizar; evite palavras de bastidor na capa (retrabalho, conciliação, caixa, planilha, processo). Sem perder a fidelidade: o carrossel precisa ENTREGAR o que a capa promete — se a capa pergunta "como aproveitar", os slides 5 e 6 respondem com ações concretas.
-3. TOM: SENSACIONALISTA E DRAMÁTICO É BEM-VINDO (decisão do dono do perfil): medo de perder paciente, dinheiro escapando, concorrente passando na frente, a agenda vazia, o "erro que custa R$ 30 mil por ano" — tudo vale, desde que o carrossel entregue e nada seja mentira. Exemplos do tom certo: "Dentista, você está pagando sua equipe para NÃO vender", "A clínica que fecha mais não é a que atende melhor", "Esse hábito da recepção está esvaziando sua agenda". OBRIGATÓRIO: a headline nomeia o público — contém a palavra "dentista(s)" ou "clínica(s)" (ex.: "O Pix bateu recorde. O que muda para o dentista?", "Como sua clínica usa o recorde do Pix para fechar mais"). Sem isso o roteiro é recusado em código. De 5 a 12 palavras, leitura excelente no celular. Pode ser ousada e ambiciosa (vender mais, lotar a agenda, fechar mais avaliações, cobrar melhor); NÃO pode mentir, inventar número nem garantir resultado ("dobre", "garantido"). Proibida a manchete fria de portal ("BC divulga recorde do Pix") e a fórmula "Dentista, você precisa saber disso".
+3. TOM: SENSACIONALISTA E DRAMÁTICO É BEM-VINDO (decisão do dono do perfil): medo de perder paciente, dinheiro escapando, concorrente passando na frente, a agenda vazia, o "erro que custa R$ 30 mil por ano" — tudo vale, desde que o carrossel entregue e nada seja mentira. Exemplos do tom certo: "Dentista, você está pagando sua equipe para NÃO vender", "A clínica que fecha mais não é a que atende melhor", "Esse hábito da recepção está esvaziando sua agenda". OBRIGATÓRIO: a headline nomeia o público — contém a palavra "dentista(s)" ou "clínica(s)" (ex.: "O Pix bateu recorde. O que muda para o dentista?", "Como sua clínica usa o recorde do Pix para fechar mais"). Sem isso o roteiro é recusado em código. De 5 a 12 palavras, leitura excelente no celular. GANCHO OBRIGATÓRIO (é o que as referências do nicho fazem): a headline tem um NÚMERO concreto (R$, %, "7x", "30 dias", "3 formas"), OU é uma PERGUNTA direta ("Seu paciente faltou hoje?"), OU fala com o leitor ("Dentista, …", "sua clínica…", "você…"). Prefira número quando a pauta tiver um. Pode ser ousada e ambiciosa (vender mais, lotar a agenda, fechar mais avaliações, cobrar melhor); NÃO pode mentir, inventar número nem garantir resultado ("dobre", "garantido"). Proibida a manchete fria de portal ("BC divulga recorde do Pix") e a fórmula "Dentista, você precisa saber disso".
 4. "destaque" = as 1 a 3 palavras do título que carregam o desejo (vão em dourado).
 5. corpo da capa = o fato em uma linha, com o número ("→ 319,7 milhões de Pix em um só dia, recorde do BC").
 
@@ -176,6 +183,7 @@ ${cfg.identidade.cta_linhas.join("\n")}
 IMAGENS (escreva os prompts em INGLÊS, descrevendo CENA; o texto é aplicado por código, nunca peça texto):
 - A imagem RETRATA O ASSUNTO DA NOTÍCIA: o produto, o lugar, o objeto, o ambiente, a cena de consumo. Nada de metáfora genérica (sino, bússola, xadrez, lâmpada). Para uma colaboração de milkshake com chocolate, mostre o milkshake com chocolate suíço num balcão; para uma turnê de despedida, o palco e a multidão vista de costas; para uma marca de moda, a peça e a vitrine.
 - Sem rosto ou aparência de pessoas reais identificáveis (pode haver pessoas genéricas de costas, mãos, silhuetas), sem foto documental falsa de um evento específico.${cfg.imagens.logos_de_marcas ? " MARCAS: quando a pauta cita uma empresa (Nubank, Shopee, iFood…), a cena PODE e DEVE mostrar a identidade visual dela — o logo, a cor e o produto reconhecíveis (ex.: \"a purple Nubank credit card with the Nubank logo\", \"an orange Shopee shopping bag with the Shopee logo\"). Nomeie a marca no prompt em inglês. Nunca logo de empresa que não está na pauta." : " Sem logos legíveis."}
+- ESTILO DA CAPA DE HOJE (decidido pelo sistema, em rodízio): ${estiloCapaTexto(args.estiloCapa ?? "hiperbole")}
 - prompt_imagem_capa (ela decide se o dentista abre o post) — REGRA DO DONO DO PERFIL: HIPÉRBOLE VISUAL. A capa é a METÁFORA LITERAL E EXAGERADA da headline, quase surreal, com humor dramático — não uma cena realista de clínica. Exemplos do nível certo: "o jeito que você fala o preço mata a venda" → um dentista de jaleco falando e cédulas de dinheiro saindo voando da boca dele; "você paga a equipe para encher a agenda" → um dentista distribuindo maços de dinheiro para vendedores de headset numa fila; "sua recepção liga e o paciente falta" → recepcionistas ao telefone enquanto pacientes saem VOANDO pela janela da clínica como balões; "boleto que destrói a margem" → notas de dinheiro derretendo/escorrendo pelo ralo da pia do consultório. Pessoas genéricas podem aparecer de frente (nunca pessoa real identificável). A CENA SEMPRE MOSTRA COM QUEM FALAMOS: um DENTISTA reconhecível (jaleco ou scrubs, lupa, luvas) e/ou o AMBIENTE DE CLÍNICA ODONTOLÓGICA (cadeira, refletor, recepção da clínica) — o dentista precisa se ver na imagem. Dinheiro é sempre em REAIS (notas brasileiras), nunca dólar. Fotorrealista e cinematográfico apesar do absurdo: um elemento focal grande, ação clara no instante decisivo. Vertical, metade de baixo mais escura e limpa para a headline. 2 a 4 frases, concretas, descrevendo a ação exagerada.
   VARIEDADE OBRIGATÓRIA (o dono reclamou que as capas estão todas iguais: "homem de jaleco branco com lupa, notas de real voando, clínica escura dourada"). Antes de escrever, escolha de propósito algo DIFERENTE das capas recentes listadas abaixo em pelo menos TRÊS destes eixos: (a) PROTAGONISTA — alterne: dentista mulher, dentista mais velho(a), dupla/equipe da clínica, recepcionista, o PACIENTE (visto da cadeira, na sala de espera, no celular em casa), só mãos, ou nenhuma pessoa (a cadeira vazia, a recepção, a porta da clínica); (b) CENÁRIO — consultório, recepção, sala de espera, fachada/rua, estacionamento, casa do paciente, laboratório de prótese, carro, cozinha da clínica; (c) OBJETO DA HIPÉRBOLE — dinheiro SÓ quando a headline fala literalmente de dinheiro E nenhuma das 3 últimas capas usou dinheiro; senão use outro objeto: pacientes, agenda/calendário gigante, celular, relógio, cadeiras vazias, portas, balões, fila, dentes gigantes, orçamentos de papel, telefone tocando, chuva/sol, elástico, âncora, balança, muro, ponte, labirinto; (d) PALETA E LUZ — não repita "escuro e dourado": alterne luz do dia branca e clínica, azul frio, manhã estourada de sol, neon, chuva cinza, verde-menta, tons pastel, contraluz; (e) CÂMERA — plano aberto, close extremo, visto de cima (top-down), contra-plongée, através de um vidro/porta. Escreva o eixo escolhido dentro do próprio prompt (ex.: "cool blue daylight, top-down view"). Dentista pode ser mulher: use "female dentist" sem receio.
   CAPAS RECENTES (NÃO REPITA protagonista + objeto + paleta destas):
