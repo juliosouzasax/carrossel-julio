@@ -14,7 +14,7 @@ function cenas(post: Post): Map<number, { funcao: "capa" | "extra"; cena: string
   const r = post.roteiro;
   const m = new Map<number, { funcao: "capa" | "extra"; cena: string }>();
   if (!r) return m;
-  if (post.slides[0]?.estilo !== "tipografia" && r.prompt_imagem_capa?.trim()) m.set(0, { funcao: "capa", cena: r.prompt_imagem_capa }); // capa só-texto não gasta imagem
+  if (!["tipografia", "repeticao"].includes(post.slides[0]?.estilo ?? "") && r.prompt_imagem_capa?.trim()) m.set(0, { funcao: "capa", cena: r.prompt_imagem_capa }); // capa só-texto não gasta imagem
   const k = fotosReais(post).length;
   (r.prompts_imagens_extras ?? []).forEach((c, i) => m.set(k + 1 + i, { funcao: "extra", cena: c }));
   return m;

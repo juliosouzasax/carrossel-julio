@@ -41,12 +41,19 @@ const PESSOA_DIFERENTE = /\b(female|woman|women|team|elderly|older|senior|recept
 
 // Três desenhos de capa em rodízio (pedido do Julio, 12/11: "as capas estão todas parecidas"; referências usam
 // cartão claro com foto e capas só de tipografia). Escolhe o estilo que NÃO apareceu nas 2 últimas capas.
-export const ESTILOS_CAPA: EstiloCapa[] = ["hiperbole", "cartao", "tipografia"];
-export function proximoEstiloDaCapa(capasEstilosRecentes: string[]): EstiloCapa {
-  const ult = capasEstilosRecentes.slice(0, 2);
-  const livre = ESTILOS_CAPA.find((e) => !ult.includes(e));
-  if (livre) return livre;
-  return ESTILOS_CAPA[(ESTILOS_CAPA.indexOf(ult[0] as EstiloCapa) + 1) % ESTILOS_CAPA.length];
+export const ESTILOS_CAPA: EstiloCapa[] = ["hiperbole", "caixa", "cartao", "bloco", "tipografia", "repeticao"];
+export const ESTILOS_SEM_IMAGEM: EstiloCapa[] = ["tipografia", "repeticao"];
+// Escolhe o estilo que não apareceu nas 3 últimas capas, começando de um ponto diferente a cada post (semente)
+// para a ordem não virar previsível.
+export function proximoEstiloDaCapa(capasEstilosRecentes: string[], semente = 0): EstiloCapa {
+  const ult = capasEstilosRecentes.slice(0, 3);
+  const n = ESTILOS_CAPA.length;
+  const inicio = ((semente % n) + n) % n;
+  for (let i = 0; i < n; i++) {
+    const e = ESTILOS_CAPA[(inicio + i) % n];
+    if (!ult.includes(e)) return e;
+  }
+  return ESTILOS_CAPA[inicio];
 }
 
 // Gancho da headline (o que as referências fazem): número concreto, pergunta direta, ou fala com o leitor.
@@ -149,14 +156,14 @@ export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; 
   }
   if (!temGancho(r.headline_escolhida ?? "")) p.push("A headline não tem gancho: use um número concreto (R$, %, x vezes, dias), uma pergunta direta, ou fale com o leitor (\"Dentista, …\", \"sua clínica…\", \"você…\").");
   const estiloCapa = s[0]?.estilo ?? "hiperbole";
-  if (!r.prompt_imagem_capa?.trim() && estiloCapa !== "tipografia") p.push("Falta o prompt da imagem da capa.");
+  if (!r.prompt_imagem_capa?.trim() && !ESTILOS_SEM_IMAGEM.includes(estiloCapa)) p.push("Falta o prompt da imagem da capa.");
   // Só acusa quando o prompt PEDE texto na cena ("with text", "showing the headline"); "room for the headline" / "no text" / "text-free" são o uso certo.
   const pc = r.prompt_imagem_capa ?? "";
   if (/\b(with|showing|displaying|featuring|reads?|reading|written|include|including)\b[^.]{0,30}\b(text|letters|caption|headline|words|typography)\b/i.test(pc) && !/\b(no|without|free of)\b[^.]{0,12}\b(text|letters|words|typography)\b|text-free|room for|space for|clean (area|space)/i.test(pc)) {
     // o gerador recebe "sem texto" por regra fixa; aqui só avisamos se o prompt pedir texto na cena
     p.push("O prompt da capa parece pedir texto dentro da imagem; os textos são aplicados por código.");
   }
-  if (opc.capasAnteriores?.length && estiloCapa !== "tipografia") p.push(...variedadeDaCapa(pc, opc.capasAnteriores));
+  if (opc.capasAnteriores?.length && !ESTILOS_SEM_IMAGEM.includes(estiloCapa)) p.push(...variedadeDaCapa(pc, opc.capasAnteriores));
   if (!["salvar", "compartilhar", "comentar", "seguir"].includes(r.chamada_final)) p.push("chamada_final inválida.");
   return p;
 }

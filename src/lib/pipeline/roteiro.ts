@@ -21,7 +21,7 @@ export async function executarRoteiro(ctx: Ctx, post: Post, correcoes?: string[]
   if (!post.pauta) throw new Error("Post sem pauta: a pesquisa precisa rodar antes do roteiro.");
   const pauta: Pauta = post.pauta;
   const hist = await historico(ctx, post.id);
-  const estiloCapa = proximoEstiloDaCapa([...hist].sort((a, b) => (a.data < b.data ? 1 : -1)).map((h) => h.capa_estilo ?? "hiperbole"));
+  const estiloCapa = proximoEstiloDaCapa([...hist].sort((a, b) => (a.data < b.data ? 1 : -1)).map((h) => h.capa_estilo ?? "hiperbole"), hist.length + (post.kind === "tarde" ? 1 : 0));
   let problemas = correcoes ?? [];
   let anterior: Roteiro | null = correcoes ? post.roteiro : null;
   let roteiro: Roteiro | null = null;

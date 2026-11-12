@@ -281,7 +281,93 @@ function CapaTipografia({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
   );
 }
 
+function Etiqueta({ texto, bg, cor }: { texto: string | null | undefined; bg: string; cor: string }) {
+  if (!texto) return null;
+  return <div style={{ display: "flex", alignSelf: "flex-start", padding: "8px 18px", borderRadius: 8, background: bg, color: cor, fontFamily: "Archivo", fontWeight: 800, fontSize: 20, letterSpacing: 2, textTransform: "uppercase" }}>{texto}</div>;
+}
+
+// CAPA CAIXA: foto do assunto inteira + caixa clara colada no rodapé com a headline (o cartão de portal de negócios).
+function CapaCaixa({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
+  const p = paleta(ctx.identidade, "foto");
+  const tam = slide.titulo.length <= 50 ? 56 : slide.titulo.length <= 70 ? 50 : 44;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", width: LARGURA, height: ALTURA, position: "relative", background: ctx.identidade.escuro }}>
+      <Imagem ctx={ctx} largura={LARGURA} altura={ALTURA} foco={0.3} />
+      <div style={{ position: "absolute", top: 0, left: 0, width: LARGURA, height: 260, display: "flex", background: "linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%)" }} />
+      <div style={{ position: "absolute", top: 0, left: MARGEM, right: MARGEM, display: "flex" }}>
+        <Kicker ctx={ctx} p={{ ...p, apagado: "#E6E0D2" }} sobreFoto />
+      </div>
+      <div style={{ position: "absolute", left: 48, right: 48, bottom: 48, display: "flex", flexDirection: "column", background: p.bg, borderRadius: 24, padding: "40px 44px 34px 44px" }}>
+        <Etiqueta texto={slide.rotulo} bg={p.ouro} cor="#FFFFFF" />
+        <div style={{ display: "flex", marginTop: slide.rotulo ? 22 : 0 }}>
+          <Lider palavras={palavrasComDestaque(slide.titulo, slide.destaque)} tamanho={tam} cor={p.fg} ouro={p.ouro} />
+        </div>
+        {slide.corpo ? <div style={{ display: "flex", marginTop: 18, fontFamily: "Archivo", fontWeight: 500, fontSize: 28, lineHeight: 1.3, color: "#4A4842" }}>{slide.corpo}</div> : null}
+        <div style={{ display: "flex", marginTop: 28, justifyContent: "space-between", alignItems: "center", fontFamily: "Archivo", fontWeight: 700, fontSize: 21, letterSpacing: 1, color: p.apagado }}>
+          <div style={{ display: "flex" }}>{ctx.identidade.conta}</div>
+          <div style={{ display: "flex" }}>01 / {String(ctx.total).padStart(2, "0")}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// CAPA BLOCO: fundo dourado chapado, imagem numa moldura torta no meio (recorte/adesivo), headline preta no rodapé.
+function CapaBloco({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
+  const id = ctx.identidade;
+  const p: Paleta = { tema: "claro", bg: id.dourado, fg: id.texto_no_claro, ouro: "#FFFFFF", apagado: "#5A4718", cartao: "#FFFFFF" };
+  const molduraW = 720, molduraH = 560;
+  const tam = slide.titulo.length <= 40 ? 72 : slide.titulo.length <= 60 ? 62 : 54;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", width: LARGURA, height: ALTURA, position: "relative", background: p.bg, paddingLeft: MARGEM, paddingRight: MARGEM }}>
+      <Kicker ctx={ctx} p={p} />
+      <div style={{ display: "flex", marginTop: 40 }}>
+        <Etiqueta texto={slide.rotulo} bg={id.escuro} cor="#FFFFFF" />
+      </div>
+      <div style={{ display: "flex", flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <div style={{ display: "flex", position: "relative", width: molduraW, height: molduraH, borderRadius: 18, overflow: "hidden", background: id.escuro, transform: "rotate(-4deg)", boxShadow: "0 30px 60px rgba(0,0,0,0.25)", border: "14px solid #FFFFFF" }}>
+          <Imagem ctx={ctx} largura={molduraW - 28} altura={molduraH - 28} foco={0.4} />
+        </div>
+      </div>
+      <div style={{ display: "flex", marginBottom: 40 }}>
+        <Lider palavras={palavrasComDestaque(slide.titulo, slide.destaque)} tamanho={tam} cor={p.fg} ouro={p.ouro} />
+      </div>
+      <div style={{ display: "flex", paddingBottom: 56 }}>
+        <Rodape n={slide.n} total={ctx.total} ctx={ctx} p={p} />
+      </div>
+    </div>
+  );
+}
+
+// CAPA REPETIÇÃO: o trecho-chave repetido linha após linha em dourado, headline completa pequena embaixo.
+function CapaRepeticao({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
+  const p = paleta(ctx.identidade, "tese");
+  const frase = (slide.destaque && slide.destaque.length <= 30 ? slide.destaque : slide.titulo.split(/\s+/).slice(0, 4).join(" ")).toUpperCase();
+  const linhas = 9;
+  const tam = frase.length <= 12 ? 96 : frase.length <= 20 ? 78 : 62;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", width: LARGURA, height: ALTURA, position: "relative", background: ctx.identidade.capa_escura, paddingLeft: MARGEM, paddingRight: MARGEM }}>
+      <Kicker ctx={ctx} p={p} />
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "center" }}>
+        {Array.from({ length: linhas }).map((_, i) => {
+          const d = Math.abs(i - Math.floor(linhas / 2));
+          return (
+            <div key={i} style={{ display: "flex", fontFamily: "Anton", fontSize: tam, lineHeight: 1.0, letterSpacing: 1, color: d === 0 ? ctx.identidade.creme_serifa : p.ouro, opacity: d === 0 ? 1 : Math.max(0.18, 1 - d * 0.22) }}>{frase}</div>
+          );
+        })}
+        <div style={{ display: "flex", marginTop: 44, fontFamily: "Archivo", fontWeight: 600, fontSize: 36, lineHeight: 1.25, color: p.fg }}>{slide.titulo}</div>
+      </div>
+      <div style={{ display: "flex", paddingBottom: 56 }}>
+        <Rodape n={slide.n} total={ctx.total} ctx={ctx} p={p} />
+      </div>
+    </div>
+  );
+}
+
 function Capa({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
+  if (slide.estilo === "caixa" && ctx.imagemDataUri) return <CapaCaixa slide={slide} ctx={ctx} />;
+  if (slide.estilo === "bloco" && ctx.imagemDataUri) return <CapaBloco slide={slide} ctx={ctx} />;
+  if (slide.estilo === "repeticao") return <CapaRepeticao slide={slide} ctx={ctx} />;
   if (slide.estilo === "cartao" && ctx.imagemDataUri) return <CapaCartao slide={slide} ctx={ctx} />;
   if (slide.estilo === "tipografia") return <CapaTipografia slide={slide} ctx={ctx} />;
   const p = paleta(ctx.identidade, "capa");

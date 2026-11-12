@@ -15,10 +15,13 @@ async function main() {
     { estilo: "cartao", titulo: "Seu paciente faltou hoje? Isso custou R$ 800 à clínica", destaque: "R$ 800", corpo: "A maioria das clínicas nem percebe o tamanho desse rombo." },
     { estilo: "tipografia", titulo: "3 formas de fechar mais na clínica sem dar desconto", destaque: "sem dar desconto", corpo: "" },
     { estilo: "hiperbole", titulo: "Dentista, sua recepção está esvaziando a agenda", destaque: "esvaziando a agenda", corpo: "Horário marcado não é venda" },
+    { estilo: "caixa", titulo: "A Shopee pagou R$ 20 de cupom. Sua clínica dá R$ 2 mil de desconto", destaque: "R$ 2 mil de desconto", corpo: "" },
+    { estilo: "bloco", titulo: "O Nubank cortou 40% da fila. E a recepção da sua clínica?", destaque: "40% da fila", corpo: "" },
+    { estilo: "repeticao", titulo: "Dentista, sua agenda vazia tem um culpado: o orçamento sem follow-up", destaque: "agenda vazia", corpo: "" },
   ];
   for (const c of casos) {
-    const slide: Slide = { n: 1, papel: "capa", layout: "capa", titulo: c.titulo, corpo: c.corpo, destaque: c.destaque, imagem_idx: 0, hipotetico: false, estilo: c.estilo };
-    const ctx = { total: 7, identidade: cfg.identidade, imagemDataUri: c.estilo === "tipografia" ? null : dataUri(buf, "jpeg"), imagemLargura: dim?.largura, imagemAltura: dim?.altura, ilustrativo: false, mesAno: mesAnoDe("2026-11-12") };
+    const slide: Slide = { n: 1, papel: "capa", layout: "capa", titulo: c.titulo, corpo: c.corpo, destaque: c.destaque, imagem_idx: 0, hipotetico: false, estilo: c.estilo, rotulo: c.estilo === "caixa" || c.estilo === "bloco" ? "Negócios" : null };
+    const ctx = { total: 7, identidade: cfg.identidade, imagemDataUri: c.estilo === "tipografia" || c.estilo === "repeticao" ? null : dataUri(buf, "jpeg"), imagemLargura: dim?.largura, imagemAltura: dim?.altura, ilustrativo: false, mesAno: mesAnoDe("2026-11-12") };
     const r = await renderizarSlideJpeg(slide, ctx);
     writeFileSync(`${out}/capa-${c.estilo}.jpg`, r.jpeg);
     console.log(c.estilo, r.largura, r.altura);
