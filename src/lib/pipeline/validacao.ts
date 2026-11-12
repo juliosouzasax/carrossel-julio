@@ -35,7 +35,21 @@ export function contaHashtags(t: string): number {
   return (t.match(/(^|\s)#[\p{L}\p{N}_]+/gu) ?? []).length;
 }
 
-export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; pauta?: Pauta | null; fotosReais?: number }): string[] {
+const DINHEIRO = /\b(money|cash|banknotes?|bills?|reais|coins?|dinheiro|notas)\b/i;
+const HOMEM_JALECO = /\bdentist\b/i;
+const PESSOA_DIFERENTE = /\b(female|woman|women|team|elderly|older|senior|receptionist|patient|hands only|no people|empty)\b/i;
+
+// Capa não pode repetir o padrão das anteriores: dinheiro de novo, ou o mesmo "dentista homem" pela 4ª vez.
+export function variedadeDaCapa(prompt: string, capasAnteriores: string[]): string[] {
+  const p: string[] = [];
+  const ult = capasAnteriores.slice(0, 3);
+  if (!ult.length) return p;
+  if (DINHEIRO.test(prompt) && ult.filter((c) => DINHEIRO.test(c)).length >= 2) p.push("A capa repete DINHEIRO como objeto da hipérbole (já usado nas últimas capas). Troque por outro objeto: pacientes, agenda, celular, relógio, cadeiras vazias, portas, fila, dentes gigantes…");
+  if (HOMEM_JALECO.test(prompt) && !PESSOA_DIFERENTE.test(prompt) && ult.length >= 3 && ult.every((c) => HOMEM_JALECO.test(c) && !PESSOA_DIFERENTE.test(c))) p.push("Quarta capa seguida com um dentista homem como protagonista. Varie: female dentist, equipe, recepcionista, paciente, só mãos ou ninguém (cadeira/recepção vazia).");
+  return p;
+}
+
+export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; pauta?: Pauta | null; fotosReais?: number; capasAnteriores?: string[] }): string[] {
   const totalImagens = (opc.fotosReais ?? 0) + (r.prompts_imagens_extras ?? []).length; // índices válidos: 0..totalImagens
   const p: string[] = [];
   const s = r.slides ?? [];
@@ -125,6 +139,7 @@ export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; 
     // o gerador recebe "sem texto" por regra fixa; aqui só avisamos se o prompt pedir texto na cena
     p.push("O prompt da capa parece pedir texto dentro da imagem; os textos são aplicados por código.");
   }
+  if (opc.capasAnteriores?.length) p.push(...variedadeDaCapa(pc, opc.capasAnteriores));
   if (!["salvar", "compartilhar", "comentar", "seguir"].includes(r.chamada_final)) p.push("chamada_final inválida.");
   return p;
 }

@@ -87,3 +87,23 @@ describe("renderização", () => {
     }
   }, 60_000);
 });
+
+import { variedadeDaCapa } from "../src/lib/pipeline/validacao";
+describe("variedade da capa", () => {
+  const velhas = [
+    "A generic dentist in white scrubs pulls Brazilian real banknotes out of a cabinet",
+    "A dentist in white scrubs runs as banknotes fly out of the clinic door",
+    "A dentist in blue scrubs hands stacks of banknotes to a line of sales agents",
+  ];
+  it("acusa dinheiro repetido e o mesmo dentista homem", () => {
+    const f = variedadeDaCapa("A dentist in white scrubs cuts a pile of banknotes with golden scissors", velhas).join(" ");
+    expect(f).toMatch(/DINHEIRO/);
+    expect(f).toMatch(/Quarta capa/);
+  });
+  it("aceita protagonista e objeto diferentes", () => {
+    expect(variedadeDaCapa("Cool blue daylight, top-down view: a female dentist watches patients float away like balloons from the waiting room", velhas)).toEqual([]);
+  });
+  it("sem histórico não acusa nada", () => {
+    expect(variedadeDaCapa("A dentist with banknotes", [])).toEqual([]);
+  });
+});

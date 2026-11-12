@@ -28,5 +28,6 @@ export async function historico(ctx: Ctx, ignorarPostId?: string): Promise<ItemH
       titulo: p.pauta!.titulo,
       headline: p.roteiro!.headline_escolhida,
       layouts: p.slides.map((s) => s.layout),
+      capa: (p.roteiro!.prompt_imagem_capa ?? "").replace(/\s+/g, " ").slice(0, 220),
     }));
 }

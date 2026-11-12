@@ -1,6 +1,6 @@
 import { garantirOrcamento, registrarTexto } from "../custo";
 import { responderJson } from "../openai";
-import { promptRoteiro } from "../../prompts";
+import { capasRecentes, promptRoteiro } from "../../prompts";
 import { SCHEMA_ROTEIRO } from "../../prompts/schemas";
 import type { Pauta, Post, Roteiro } from "../types";
 import { historico, logar, type Ctx } from "./contexto";
@@ -39,7 +39,7 @@ export async function executarRoteiro(ctx: Ctx, post: Post, correcoes?: string[]
       roteiro = { ...roteiro, slides: roteiro.slides.map((s, i) => (i === 0 ? { ...s, imagem_idx: 0 } : s)) };
       await logar(ctx, post, "roteiro", "info", `Capa voltou para imagem gerada: a foto real ${fotoDaCapa.indice} tem só ${fotoDaCapa.largura}x${fotoDaCapa.altura}.`);
     }
-    const falhas = validarRoteiro(roteiro, { tipo: post.tipo_pauta, cfg, pauta, fotosReais: reais.length });
+    const falhas = validarRoteiro(roteiro, { tipo: post.tipo_pauta, cfg, pauta, fotosReais: reais.length, capasAnteriores: capasRecentes(hist) });
     if (!falhas.length) break;
     await logar(ctx, post, "roteiro", "aviso", `Validação em código encontrou ${falhas.length} problema(s); corrigindo.`, falhas);
     problemas = falhas;
