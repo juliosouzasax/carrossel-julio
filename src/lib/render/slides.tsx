@@ -364,7 +364,40 @@ function CapaRepeticao({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
   );
 }
 
+// CAPA IRONIA: foto editorial de página inteira (capa de revista), kicker "ESTUDO DE CASO · categoria", headline centralizada em caixa alta e pílula da marca.
+function CapaIronia({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
+  const p = paleta(ctx.identidade, "capa");
+  const id = ctx.identidade;
+  const kicker = { display: "flex", fontFamily: "Archivo", fontWeight: 700, fontSize: 19, letterSpacing: 3, color: "#F2EDE1", textTransform: "uppercase", textShadow: "0 1px 8px rgba(0,0,0,0.7)" } as const;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", width: LARGURA, height: ALTURA, position: "relative", background: p.bg }}>
+      <Imagem ctx={ctx} largura={LARGURA} altura={ALTURA} foco={0.35} />
+      <div style={{ position: "absolute", top: 0, left: 0, width: LARGURA, height: ALTURA, display: "flex", background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 74%, rgba(0,0,0,0.9) 100%)" }} />
+      <div style={{ position: "absolute", top: TOPO, left: MARGEM, right: MARGEM, display: "flex", justifyContent: "space-between" }}>
+        <div style={kicker}>Estudo de caso</div>
+        <div style={kicker}>{slide.rotulo ?? "Clínicas"}</div>
+        <div style={kicker}>© {ctx.mesAno.slice(-4)}</div>
+      </div>
+      <div style={{ position: "absolute", left: 60, right: 60, bottom: 150, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", fontFamily: "Anton", fontSize: tamanhoManchete(slide.titulo, true), lineHeight: 1.0, textTransform: "uppercase", color: "#F6F1E6", textAlign: "center", textShadow: "0 4px 24px rgba(0,0,0,0.6)" }}>
+          {palavrasComDestaque(slide.titulo, slide.destaque).map((w, i) => (
+            <span key={i} style={{ color: w.d ? p.ouro : "#F6F1E6", marginRight: 14 }}>{w.t}</span>
+          ))}
+        </div>
+        {slide.corpo ? <div style={{ display: "flex", marginTop: 26, fontFamily: "Archivo", fontWeight: 700, fontSize: 26, letterSpacing: 2, color: "#E6E0D2", textTransform: "uppercase", textAlign: "center" }}>{slide.corpo}</div> : null}
+      </div>
+      <div style={{ position: "absolute", left: 0, right: 0, bottom: 56, display: "flex", justifyContent: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", background: p.ouro, color: id.escuro, fontFamily: "Archivo", fontWeight: 800, fontSize: 22, letterSpacing: 3, textTransform: "uppercase", padding: "10px 22px", borderRadius: 40 }}>
+          {id.assinatura} <span style={{ marginLeft: 12 }}>→</span>
+        </div>
+      </div>
+      <div style={{ position: "absolute", left: MARGEM, bottom: 20, display: "flex", fontFamily: "Archivo", fontWeight: 600, fontSize: 18, color: "#CFC9BA" }}>{ctx.credito ? ctx.credito : ctx.ilustrativo ? id.rotulo_ilustracao : ""}</div>
+    </div>
+  );
+}
+
 function Capa({ slide, ctx }: { slide: Slide; ctx: ContextoRender }) {
+  if (slide.estilo === "ironia" && ctx.imagemDataUri) return <CapaIronia slide={slide} ctx={ctx} />;
   if (slide.estilo === "caixa" && ctx.imagemDataUri) return <CapaCaixa slide={slide} ctx={ctx} />;
   if (slide.estilo === "bloco" && ctx.imagemDataUri) return <CapaBloco slide={slide} ctx={ctx} />;
   if (slide.estilo === "repeticao") return <CapaRepeticao slide={slide} ctx={ctx} />;

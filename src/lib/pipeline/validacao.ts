@@ -41,7 +41,7 @@ const PESSOA_DIFERENTE = /\b(female|woman|women|team|elderly|older|senior|recept
 
 // Três desenhos de capa em rodízio (pedido do Julio, 12/11: "as capas estão todas parecidas"; referências usam
 // cartão claro com foto e capas só de tipografia). Escolhe o estilo que NÃO apareceu nas 2 últimas capas.
-export const ESTILOS_CAPA: EstiloCapa[] = ["hiperbole", "caixa", "cartao", "bloco", "tipografia", "repeticao"];
+export const ESTILOS_CAPA: EstiloCapa[] = ["hiperbole", "caixa", "ironia", "cartao", "bloco", "tipografia", "repeticao"];
 export const ESTILOS_SEM_IMAGEM: EstiloCapa[] = ["tipografia", "repeticao"];
 // Escolhe o estilo que não apareceu nas 3 últimas capas, começando de um ponto diferente a cada post (semente)
 // para a ordem não virar previsível.
@@ -58,7 +58,7 @@ export function proximoEstiloDaCapa(capasEstilosRecentes: string[], semente = 0)
 
 // Gancho da headline (o que as referências fazem): número concreto, pergunta direta, ou fala com o leitor.
 export function temGancho(h: string): boolean {
-  return /\d/.test(h) || /\?/.test(h) || /\b(voc[êe]|sua|seu|dentista,|pare de|nunca|erro|segredo|por que|como)\b/i.test(h);
+  return /\d/.test(h) || /\?/.test(h) || /\b(voc[êe]|sua|seu|dentista,|pare de|nunca|erro|segredo|por que|como|tod[oa]s?|quem|j[áa]|ningu[ée]m|sempre|ora[çc][ãa]o)\b/i.test(h);
 }
 
 // Capa não pode repetir o padrão das anteriores: dinheiro de novo, ou o mesmo "dentista homem" pela 4ª vez.

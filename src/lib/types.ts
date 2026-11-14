@@ -88,7 +88,7 @@ export type ReferenciaIG = {
   coletado_em: string;
 };
 
-export type EstiloCapa = "hiperbole" | "cartao" | "tipografia" | "caixa" | "bloco" | "repeticao";
+export type EstiloCapa = "hiperbole" | "cartao" | "tipografia" | "caixa" | "bloco" | "repeticao" | "ironia";
 
 export type Slide = {
   n: number;

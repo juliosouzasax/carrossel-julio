@@ -1,4 +1,4 @@
-// Renderiza os 3 estilos de capa com uma imagem-base local, para conferir o desenho sem gastar imagem.
+// Renderiza os 7 estilos de capa com uma imagem-base local, para conferir o desenho sem gastar imagem.
 //   npx tsx scripts/_demo-estilos-capa.ts <imagem.jpg> <saida/>
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { configPadrao } from "../src/lib/config";
@@ -17,6 +17,7 @@ async function main() {
     { estilo: "hiperbole", titulo: "Dentista, sua recepção está esvaziando a agenda", destaque: "esvaziando a agenda", corpo: "Horário marcado não é venda" },
     { estilo: "caixa", titulo: "A Shopee pagou R$ 20 de cupom. Sua clínica dá R$ 2 mil de desconto", destaque: "R$ 2 mil de desconto", corpo: "" },
     { estilo: "bloco", titulo: "O Nubank cortou 40% da fila. E a recepção da sua clínica?", destaque: "40% da fila", corpo: "" },
+    { estilo: "ironia", titulo: "A cada ano o fim de ano fica pior para a clínica", destaque: "fica pior", corpo: "Novembro decide dezembro" },
     { estilo: "repeticao", titulo: "Dentista, sua agenda vazia tem um culpado: o orçamento sem follow-up", destaque: "agenda vazia", corpo: "" },
   ];
   for (const c of casos) {

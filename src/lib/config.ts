@@ -191,7 +191,7 @@ export const ConfigSchema = z.object({
       referencias_estilo: z
         .string()
         .default(
-          "Perfis de referência de posicionamento (sem cópia de conteúdo): @annysoouto (vendas e estrutura comercial para clínicas), @fabioavelarmkt (marketing para dentistas), @rinovack (gestão e marketing em saúde), @ilaflavia (gestão, vendas, equipe e lucro de clínicas).",
+          "Perfis de referência de posicionamento (sem cópia de conteúdo): @annysoouto (vendas e estrutura comercial para clínicas), @fabioavelarmkt (marketing para dentistas), @rinovack (gestão e marketing em saúde), @ilaflavia (gestão, vendas, equipe e lucro de clínicas), @academiadaindependencia (negócios na harmonização: capas de revista com humor seco e identidade de nicho, slides internos alternando fundo creme, cor da marca e foto escura, cada um com manchete em caixa alta, foto editorial e uma frase final em negrito).",
         ),
       evitar: z
         .string()
