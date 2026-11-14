@@ -16,7 +16,7 @@ export const LIMITES = {
   slidesMin: 6,
   slidesMax: 8,
   headlinePalavrasMin: 4,
-  headlinePalavrasMax: 12,
+  headlinePalavrasMax: 16,
   tituloCapa: 64,
   titulo: 120,
   corpo: 260,
@@ -58,7 +58,8 @@ export function proximoEstiloDaCapa(capasEstilosRecentes: string[], semente = 0)
 
 // Gancho da headline (o que as referências fazem): número concreto, pergunta direta, ou fala com o leitor.
 export function temGancho(h: string): boolean {
-  return /\d/.test(h) || /\?/.test(h) || /\b(voc[êe]|sua|seu|dentista,|pare de|nunca|erro|segredo|por que|como|tod[oa]s?|quem|j[áa]|ningu[ée]m|sempre|ora[çc][ãa]o)\b/i.test(h);
+  // Prende = pergunta aberta (por que/como/o que…), número concreto, ou promessa de revelação. "você/sua clínica" sozinho não prende.
+  return /\d/.test(h) || /\b(por qu[eê]|como|o que|quem|qual|quais|de onde|onde|quando)\b/i.test(h) || /\b(tudo (o )?que|por tr[áa]s|ningu[ée]m|a verdade|o segredo|o erro|o motivo)\b/i.test(h);
 }
 
 // Capa não pode repetir o padrão das anteriores: dinheiro de novo, ou o mesmo "dentista homem" pela 4ª vez.
@@ -154,7 +155,7 @@ export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; 
     const algumaFonte = opc.pauta.fontes.some((f) => legenda.toLowerCase().includes(f.dominio.toLowerCase()));
     if (!algumaFonte) p.push("A legenda precisa citar as fontes (domínio de pelo menos uma fonte da pauta).");
   }
-  if (!temGancho(r.headline_escolhida ?? "")) p.push("A headline não tem gancho: use um número concreto (R$, %, x vezes, dias), uma pergunta direta, ou fale com o leitor (\"Dentista, …\", \"sua clínica…\", \"você…\").");
+  if (!temGancho(r.headline_escolhida ?? "")) p.push("A headline não prende: use duas partes — fato específico + pergunta ABERTA (por que/como/o que…) que o leitor não sabe responder — ou um número concreto, ou uma promessa de revelação (tudo que…, por trás de…). Falar com o leitor sozinho não basta, e a capa não pode entregar a tese.");
   const estiloCapa = s[0]?.estilo ?? "hiperbole";
   if (!r.prompt_imagem_capa?.trim() && !ESTILOS_SEM_IMAGEM.includes(estiloCapa)) p.push("Falta o prompt da imagem da capa.");
   // Só acusa quando o prompt PEDE texto na cena ("with text", "showing the headline"); "room for the headline" / "no text" / "text-free" são o uso certo.
