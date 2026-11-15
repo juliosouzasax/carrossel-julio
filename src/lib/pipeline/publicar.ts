@@ -2,6 +2,7 @@ import { clienteInstagram, ErroInstagram, garantirConta, imagemPublicaOk, type C
 import { instanteSP } from "../tempo";
 import type { Post, Publicacao } from "../types";
 import { logar, type Ctx } from "./contexto";
+import { publicarStoryDoPost } from "./story";
 import { publicarPostNoTikTok } from "./tiktokPublicar";
 
 export type DepsPublicar = {
@@ -12,7 +13,7 @@ export type DepsPublicar = {
 
 export type ResultadoPublicar = { resultado: "publicado" | "simulado" | "aguardando" | "falhou"; post: Post; mensagem: string };
 
-const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const dormir = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const norm = (s: string | null | undefined) => (s ?? "").replace(/\s+/g, " ").trim();
 
 function alt(post: Post, n: number): string {
@@ -158,6 +159,7 @@ export async function executarPublicacao(ctx: Ctx, postInicial: Post, deps: Deps
     pub = { ...pub, media_id: mediaId, permalink: d.permalink, confirmada_em: d.timestamp ?? new Date().toISOString(), ultimo_erro: null };
     post = await salvar(ctx, post, pub, { status: "publicado", erro: null });
     await logar(ctx, post, "publicacao", "info", "Publicado no Instagram.", { media_id: mediaId, permalink: d.permalink });
+    post = await publicarStoryDoPost(ctx, post, { cliente: deps.cliente, verificarImagem, esperar }); // story chamando pro feed; nunca desfaz o post
     post = await publicarPostNoTikTok(ctx, post); // espelho; nunca desfaz o Instagram
     return { resultado: "publicado", post, mensagem: `Publicado: ${d.permalink ?? mediaId}` };
   } catch (e) {

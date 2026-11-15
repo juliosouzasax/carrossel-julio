@@ -70,6 +70,7 @@ export interface ClienteIG {
   criarItem(imageUrl: string, altText?: string): Promise<string>;
   statusContainer(id: string): Promise<StatusContainer>;
   criarCarrossel(ids: string[], legenda: string): Promise<string>;
+  criarStory(imageUrl: string): Promise<string>;
   publicar(containerId: string): Promise<string>;
   detalhe(mediaId: string): Promise<{ permalink: string | null; timestamp: string | null }>;
   recentes(): Promise<MidiaRecente[]>;
@@ -92,6 +93,11 @@ export function clienteInstagram(token: string, igId: string): ClienteIG {
     },
     async criarCarrossel(ids, legenda) {
       const j = await req(token, "POST", `${igId}/media`, { media_type: "CAROUSEL", children: ids.join(","), caption: legenda });
+      return String(j.id);
+    },
+    async criarStory(imageUrl) {
+      // Story de imagem (9:16). Sem stickers de link/menção pela API: a chamada para o feed vai desenhada na arte.
+      const j = await req(token, "POST", `${igId}/media`, { media_type: "STORIES", image_url: imageUrl });
       return String(j.id);
     },
     async publicar(containerId) {

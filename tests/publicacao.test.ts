@@ -111,3 +111,44 @@ describe("publicação no Instagram", () => {
     expect(Object.keys(c.chamadas)).toHaveLength(0);
   });
 });
+
+describe("story depois do carrossel", () => {
+  it("publica o story chamando pro feed logo depois do post", async () => {
+    const store = novoStore();
+    const ctx = await ctxEm(store, "12:00");
+    const post = await postPronto(store);
+    const c = clienteFalso();
+    const r = await executarPublicacao(ctx, post, deps(c));
+    expect(r.resultado).toBe("publicado");
+    expect(c.chamadas.criarStory).toBe(1);
+    expect(c.chamadas.publicar).toBe(1);
+    expect(c.chamadas.publicarStory).toBe(1);
+    expect(r.post.publicacao.story?.media_id).toBe("s1");
+    expect(r.post.publicacao.story?.url).toContain("/story-");
+  });
+
+  it("story que falha não desfaz o post e fica marcado para tentar de novo", async () => {
+    const store = novoStore();
+    const ctx = await ctxEm(store, "12:00");
+    const post = await postPronto(store);
+    const c = clienteFalso({ storyFalha: new ErroInstagram("Instagram: 500", null, null, 500, true) });
+    const r = await executarPublicacao(ctx, post, deps(c));
+    expect(r.resultado).toBe("publicado");
+    expect(r.post.status).toBe("publicado");
+    expect(r.post.publicacao.media_id).toBe("m1");
+    expect(r.post.publicacao.story?.media_id).toBeFalsy();
+    expect(r.post.publicacao.story?.tentativas).toBe(1);
+    expect(r.post.publicacao.story?.erro).toContain("500");
+  });
+
+  it("story desligado na configuração: não chama o Instagram para ele", async () => {
+    const store = novoStore();
+    const ctx = await ctxEm(store, "12:00", { story: { ativo: false } });
+    const post = await postPronto(store);
+    const c = clienteFalso();
+    const r = await executarPublicacao(ctx, post, deps(c));
+    expect(r.resultado).toBe("publicado");
+    expect(c.chamadas.criarStory ?? 0).toBe(0);
+    expect(c.chamadas.publicar).toBe(1);
+  });
+});

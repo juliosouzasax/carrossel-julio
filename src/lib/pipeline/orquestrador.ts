@@ -9,6 +9,7 @@ import { executarImagens, regenerarImagem } from "./imagens";
 import { backoffMs, executarPublicacao, type DepsPublicar, type ResultadoPublicar } from "./publicar";
 import { executarPesquisa, pautaAtemporal, type ResultadoPesquisa } from "./pesquisa";
 import { executarPesquisaReferencias } from "./referencias";
+import { publicarStoryDoPost, storyPendente } from "./story";
 import { atualizarStatusTikTok } from "./tiktokPublicar";
 import { executarRender } from "./renderizar";
 import { executarRecheck, executarRevisao } from "./revisao";
@@ -346,6 +347,11 @@ export async function tick(store: Store, blobs: Blobs, conta: string, op: Opcoes
         executados.push({ post: p.id, kind: p.kind, acao: r.acao });
         if (ehTerminal(atual) || antes === atual.status + "|" + atual.atualizado_em) break;
       }
+    }
+    // Story pendente (falhou logo depois do carrossel): tenta de novo, até 3 vezes no dia.
+    if (!somenteTeste && cfg.story.ativo) {
+      const semStory = (await store.listarPosts({ desde: agora.data, ate: agora.data, kinds: ["dia", "tarde"], limite: 10 })).filter((p) => storyPendente(p, cfg) && (p.publicacao.story?.tentativas ?? 0) > 0);
+      for (const p of semStory) await publicarStoryDoPost(ctx, p);
     }
     // Espelho no TikTok: confere o status do que foi enviado hoje e ainda está processando.
     if (!somenteTeste && cfg.tiktok.ativo) {

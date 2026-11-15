@@ -126,7 +126,7 @@ export function passosFalsos(chamadas: Record<string, number>, sobrescreve: Part
 export type Espiao = { chamadas: Record<string, number> } & ClienteIG;
 
 // Cliente do Instagram falso. "recentes" é o que "já existe" no perfil.
-export function clienteFalso(opc: { publicarFalha?: Error | "timeout-mas-publicou"; recentes?: { id: string; caption: string | null; permalink: string | null; timestamp: string }[] } = {}): Espiao {
+export function clienteFalso(opc: { publicarFalha?: Error | "timeout-mas-publicou"; storyFalha?: Error; recentes?: { id: string; caption: string | null; permalink: string | null; timestamp: string }[] } = {}): Espiao {
   const chamadas: Record<string, number> = {};
   const cont = (k: string) => (chamadas[k] = (chamadas[k] ?? 0) + 1);
   const recentes = opc.recentes ?? [];
@@ -136,7 +136,9 @@ export function clienteFalso(opc: { publicarFalha?: Error | "timeout-mas-publico
     async criarItem() { cont("criarItem"); return `item${chamadas.criarItem}`; },
     async statusContainer() { cont("status"); return { codigo: "FINISHED" as const }; },
     async criarCarrossel() { cont("criarCarrossel"); return "carrossel1"; },
-    async publicar() {
+    async criarStory() { cont("criarStory"); if (opc.storyFalha) throw opc.storyFalha; return "story1"; },
+    async publicar(containerId: string) {
+      if (containerId === "story1") { cont("publicarStory"); return "s1"; }
       cont("publicar");
       if (opc.publicarFalha === "timeout-mas-publicou") {
         recentes.push({ id: "m1", caption: "Legenda de teste #dentista", permalink: "https://instagram.com/p/x", timestamp: new Date().toISOString() });

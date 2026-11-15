@@ -84,6 +84,8 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
         {post.recheck && (<><h2>Checagem final de atualidade</h2><div className="card"><p>{post.recheck.resumo}</p><span className={`pill ${post.recheck.ainda_valido ? "ok" : "erro"}`}>{post.recheck.ainda_valido ? "ainda válido" : "não válido"}</span></div></>)}
 
         {post.publicacao.permalink && <p><a href={post.publicacao.permalink} target="_blank" rel="noreferrer noopener">Ver post no Instagram</a> · id {post.publicacao.media_id}</p>}
+        {post.publicacao.story?.media_id && <p>Story publicado{post.publicacao.story.permalink ? <> · <a href={post.publicacao.story.permalink} target="_blank" rel="noreferrer noopener">ver</a></> : null}{post.publicacao.story.url ? <> · <a href={post.publicacao.story.url} target="_blank" rel="noreferrer noopener">arte</a></> : null}</p>}
+        {post.publicacao.story?.erro && !post.publicacao.story.media_id && <p className="msg">Story não saiu: {post.publicacao.story.erro}</p>}
         {post.publicacao.simulada && <p className="msg">Publicação SIMULADA: nenhuma chamada de publicação foi feita ao Instagram.</p>}
 
         {editavel && post.slides.length > 0 && (<><h2>Editar texto</h2><EditorTexto postId={id} slides={post.slides.map((s) => ({ n: s.n, titulo: s.titulo, corpo: s.corpo }))} legenda={post.legenda} /></>)}

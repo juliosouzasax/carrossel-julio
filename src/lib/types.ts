@@ -176,8 +176,20 @@ export type PublicacaoTikTok = {
   conferido_em?: string | null;
 };
 
+export type PublicacaoStory = {
+  storage_path?: string | null;
+  url?: string | null;
+  container_id?: string | null;
+  media_id?: string | null;
+  permalink?: string | null;
+  tentativas?: number;
+  erro?: string | null;
+  em?: string | null; // quando saiu (ou quando falhou pela última vez)
+};
+
 export type Publicacao = {
   tiktok?: PublicacaoTikTok; // espelho no TikTok (melhor esforço; nunca bloqueia o Instagram)
+  story?: PublicacaoStory; // story chamando para o post do feed (melhor esforço; sai logo depois do carrossel)
   programada_para?: string | null; // ISO
   container_ids?: string[];
   container_carrossel_id?: string | null;
