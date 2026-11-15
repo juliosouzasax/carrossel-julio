@@ -56,10 +56,24 @@ export function proximoEstiloDaCapa(capasEstilosRecentes: string[], semente = 0)
   return ESTILOS_CAPA[inicio];
 }
 
+// POST DAS 18h (kind 'tarde'): a capa é SEMPRE o molde da Academia da Independência (estilo 'ironia': foto de página
+// inteira com pessoa, manchete branca em caixa alta na base). Decisão do Julio em 15/11/2026, depois de ver que o rodízio
+// mandava capa creme/só-texto para a tarde. O post das 12h continua no rodízio.
+export const ESTILO_CAPA_TARDE: EstiloCapa = "ironia";
+export function estiloDaCapaDoPost(kind: string, capasEstilosRecentes: string[], semente = 0): EstiloCapa {
+  return kind === "tarde" ? ESTILO_CAPA_TARDE : proximoEstiloDaCapa(capasEstilosRecentes, semente);
+}
+// Na tarde o texto não pede desculpa pela cena: "cena hipotética", "imagine", "cenário fictício" ficam fora do slide
+// (a Academia conta a cena como se fosse real; a marca de exemplo inventado vive no campo hipotetico, não no texto).
+export const PEDIDO_DE_DESCULPA = /\b(hipot[ée]tic[ao]s?|hip[óo]tese|imagine|imaginemos|suponha|cen[áa]rio (fict[íi]cio|inventado|imagin[áa]rio)|exemplo (fict[íi]cio|inventado))\b/i;
+
 // Gancho da headline (o que as referências fazem): número concreto, pergunta direta, ou fala com o leitor.
-export function temGancho(h: string): boolean {
+export function temGancho(h: string, tarde = false): boolean {
   // Prende = pergunta aberta (por que/como/o que…), número concreto, ou promessa de revelação. "você/sua clínica" sozinho não prende.
-  return /\d/.test(h) || /\b(por qu[eê]|como|o que|quem|qual|quais|de onde|onde|quando)\b/i.test(h) || /\b(tudo (o )?que|por tr[áa]s|ningu[ée]m|a verdade|o segredo|o erro|o motivo)\b/i.test(h);
+  if (/\d/.test(h) || /\b(por qu[eê]|como|o que|quem|qual|quais|de onde|onde|quando)\b/i.test(h) || /\b(tudo (o )?que|por tr[áa]s|ningu[ée]m|a verdade|o segredo|o erro|o motivo)\b/i.test(h)) return true;
+  // Tarde (molde Academia): a AFIRMAÇÃO sensacionalista também prende — "A cada ano que passa o fim de ano pra clínicas fica pior",
+  // "Toda dentista já…", "Oração para bater recorde em novembro".
+  return tarde && /\b(a cada|cada vez|pior|nunca|sempre|tod[ao]s? (dentista|cl[íi]nica|recep[çc])|ora[çc][ãa]o|chega de|pare de|parem de)\b/i.test(h);
 }
 
 // Capa não pode repetir o padrão das anteriores: dinheiro de novo, ou o mesmo "dentista homem" pela 4ª vez.
@@ -72,7 +86,7 @@ export function variedadeDaCapa(prompt: string, capasAnteriores: string[]): stri
   return p;
 }
 
-export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; pauta?: Pauta | null; fotosReais?: number; capasAnteriores?: string[] }): string[] {
+export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; pauta?: Pauta | null; fotosReais?: number; capasAnteriores?: string[]; tarde?: boolean }): string[] {
   const totalImagens = (opc.fotosReais ?? 0) + (r.prompts_imagens_extras ?? []).length; // índices válidos: 0..totalImagens
   const p: string[] = [];
   const s = r.slides ?? [];
@@ -121,7 +135,8 @@ export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; 
     if (x.rotulo && x.rotulo.length > 18) p.push(`Slide ${x.n}: rotulo com mais de 18 caracteres.`);
     if (DEFENSIVO.test(`${x.titulo} ${x.corpo}`)) p.push(`Slide ${x.n}: tom defensivo/jurídico dentro do slide ("${(DEFENSIVO.exec(`${x.titulo} ${x.corpo}`) ?? [""])[0]}"). Se o fato não está confirmado, não entra no slide; se está, afirme com a fonte.`);
     if (x.imagem_idx !== null && x.imagem_idx !== undefined && (x.imagem_idx < 0 || x.imagem_idx > totalImagens)) p.push(`Slide ${x.n}: imagem_idx ${x.imagem_idx} não existe (válidos: 0 a ${totalImagens} — ${opc.fotosReais ?? 0} foto(s) real(is) + ${(r.prompts_imagens_extras ?? []).length} extra(s) da IA).`);
-    if (x.papel === "exemplo" && !x.hipotetico) p.push(`Slide ${x.n}: exemplo inventado deve ser marcado como hipotético (hipotetico = true).`);
+    if (x.papel === "exemplo" && !x.hipotetico && !opc.tarde) p.push(`Slide ${x.n}: exemplo inventado deve ser marcado como hipotético (hipotetico = true).`);
+    if (opc.tarde && PEDIDO_DE_DESCULPA.test(`${x.titulo} ${x.corpo}`)) p.push(`Slide ${x.n}: no post das 18h a cena é contada como da rotina, sem "${(PEDIDO_DE_DESCULPA.exec(`${x.titulo} ${x.corpo}`) ?? [""])[0]}". Não peça desculpa pelo exemplo; descreva a cena direto (sem números inventados).`);
     if (opc.tipo === "atemporal" && TEMPO_DE_NOTICIA.test(`${x.titulo} ${x.corpo}`)) p.push(`Slide ${x.n}: conteúdo atemporal não pode soar como notícia do dia (hoje/ontem/nesta semana).`);
     if (PROMESSA_DE_MATERIAL.test(`${x.titulo} ${x.corpo}`)) p.push(`Slide ${x.n}: não prometa material por mensagem ou link; essa entrega não existe.`);
     if (PROMESSA_DE_RESULTADO.test(`${x.titulo} ${x.corpo}`)) p.push(`Slide ${x.n}: remova promessa de resultado/faturamento.`);
@@ -155,7 +170,9 @@ export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; 
     const algumaFonte = opc.pauta.fontes.some((f) => legenda.toLowerCase().includes(f.dominio.toLowerCase()));
     if (!algumaFonte) p.push("A legenda precisa citar as fontes (domínio de pelo menos uma fonte da pauta).");
   }
-  if (!temGancho(r.headline_escolhida ?? "")) p.push("A headline não prende: use duas partes — fato específico + pergunta ABERTA (por que/como/o que…) que o leitor não sabe responder — ou um número concreto, ou uma promessa de revelação (tudo que…, por trás de…). Falar com o leitor sozinho não basta, e a capa não pode entregar a tese.");
+  if (opc.tarde && PEDIDO_DE_DESCULPA.test(legenda)) p.push(`A legenda do post das 18h não usa "${(PEDIDO_DE_DESCULPA.exec(legenda) ?? [""])[0]}": conte a cena direto.`);
+  if (opc.tarde && s[0]?.estilo !== ESTILO_CAPA_TARDE) p.push(`A capa do post das 18h é sempre o estilo "${ESTILO_CAPA_TARDE}" (foto inteira com pessoa e manchete branca).`);
+  if (!temGancho(r.headline_escolhida ?? "", !!opc.tarde)) p.push("A headline não prende: use duas partes — fato específico + pergunta ABERTA (por que/como/o que…) que o leitor não sabe responder — ou um número concreto, ou uma promessa de revelação (tudo que…, por trás de…). Falar com o leitor sozinho não basta, e a capa não pode entregar a tese.");
   const estiloCapa = s[0]?.estilo ?? "hiperbole";
   if (!r.prompt_imagem_capa?.trim() && !ESTILOS_SEM_IMAGEM.includes(estiloCapa)) p.push("Falta o prompt da imagem da capa.");
   // Só acusa quando o prompt PEDE texto na cena ("with text", "showing the headline"); "room for the headline" / "no text" / "text-free" são o uso certo.

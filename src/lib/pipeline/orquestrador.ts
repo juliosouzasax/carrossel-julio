@@ -439,7 +439,7 @@ export async function executarAcao(store: Store, blobs: Blobs, conta: string, po
         });
         const legenda = acao.legenda ?? post.legenda;
         if (post.roteiro) {
-          const falhas = validarRoteiro({ ...post.roteiro, slides, legenda }, { tipo: post.tipo_pauta, cfg, pauta: post.pauta });
+          const falhas = validarRoteiro({ ...post.roteiro, slides, legenda }, { tipo: post.tipo_pauta, cfg, pauta: post.pauta, tarde: post.kind === "tarde" });
           if (falhas.length) return { ok: false, mensagem: `Edição recusada pela validação: ${falhas.join(" | ")}`, post };
         }
         let p = (await store.atualizarPost(post.id, { slides, legenda, roteiro: post.roteiro ? { ...post.roteiro, slides, legenda } : null, status: "imagens_prontas", revisoes: [], recheck: null })) ?? post;

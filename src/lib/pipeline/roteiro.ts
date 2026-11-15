@@ -4,7 +4,7 @@ import { capasRecentes, promptRoteiro } from "../../prompts";
 import { SCHEMA_ROTEIRO } from "../../prompts/schemas";
 import type { Pauta, Post, Roteiro } from "../types";
 import { historico, logar, type Ctx } from "./contexto";
-import { normalizarRoteiro, proximoEstiloDaCapa, validarRoteiro } from "./validacao";
+import { estiloDaCapaDoPost, normalizarRoteiro, validarRoteiro } from "./validacao";
 import { fotosReais } from "./imagens";
 
 function semente(data: string): string {
@@ -21,7 +21,8 @@ export async function executarRoteiro(ctx: Ctx, post: Post, correcoes?: string[]
   if (!post.pauta) throw new Error("Post sem pauta: a pesquisa precisa rodar antes do roteiro.");
   const pauta: Pauta = post.pauta;
   const hist = await historico(ctx, post.id);
-  const estiloCapa = proximoEstiloDaCapa([...hist].sort((a, b) => (a.data < b.data ? 1 : -1)).map((h) => h.capa_estilo ?? "hiperbole"), hist.length + (post.kind === "tarde" ? 1 : 0));
+  const tarde = post.kind === "tarde";
+  const estiloCapa = estiloDaCapaDoPost(post.kind, [...hist].sort((a, b) => (a.data < b.data ? 1 : -1)).map((h) => h.capa_estilo ?? "hiperbole"), hist.length + (post.kind === "tarde" ? 1 : 0));
   let problemas = correcoes ?? [];
   let anterior: Roteiro | null = correcoes ? post.roteiro : null;
   let roteiro: Roteiro | null = null;
@@ -29,11 +30,12 @@ export async function executarRoteiro(ctx: Ctx, post: Post, correcoes?: string[]
   for (let tentativa = 0; tentativa < 2; tentativa++) {
     await garantirOrcamento(store, cfg);
     const reais = fotosReais(post).map((f) => ({ indice: f.indice, descricao: `${f.largura ?? "?"}x${f.altura ?? "?"}, ${f.credito ?? "fonte"}${f.origem_url ? ` — ${f.origem_url}` : ""}` }));
-    const p = promptRoteiro({ cfg, dataHoje: ctx.agora.data, pauta, tipo: post.tipo_pauta, historico: hist, semente: semente(post.data), estiloCapa, correcoes: problemas.length ? problemas : undefined, roteiroAnterior: anterior, fotosReais: reais });
+    const p = promptRoteiro({ cfg, dataHoje: ctx.agora.data, pauta, tipo: post.tipo_pauta, historico: hist, semente: semente(post.data), estiloCapa, correcoes: problemas.length ? problemas : undefined, roteiroAnterior: anterior, fotosReais: reais, tarde });
     const { dados, resposta } = await responderJson<Roteiro>({ modelo: cfg.modelos.roteiro, instrucoes: p.instrucoes, entrada: p.entrada, schema: SCHEMA_ROTEIRO, raciocinio: cfg.raciocinio.roteiro, timeoutMs: 230_000 });
     await registrarTexto(store, cfg, post.id, tentativa === 0 && !correcoes ? "roteiro" : "roteiro_correcao", cfg.modelos.roteiro, resposta, p.versao);
     roteiro = normalizarRoteiro({ ...dados, prompt_version: p.versao, fonte_resumo_para_legenda: "" });
-    roteiro = { ...roteiro, slides: roteiro.slides.map((sl, i) => (i === 0 ? { ...sl, estilo: estiloCapa } : sl)) };
+    // Tarde: a pílula "EXEMPLO HIPOTÉTICO" não entra na arte (a cena é contada direto), por isso o campo vai como false.
+    roteiro = { ...roteiro, slides: roteiro.slides.map((sl, i) => ({ ...sl, ...(i === 0 ? { estilo: estiloCapa } : {}), ...(tarde ? { hipotetico: false } : {}) })) };
     // Capa com foto real pequena fica borrada (1080x1350 a partir de 1200x675): volta para a capa gerada.
     const capa = roteiro.slides[0];
     const fotoDaCapa = capa ? fotosReais(post).find((f) => f.indice === capa.imagem_idx) : undefined;
@@ -41,7 +43,7 @@ export async function executarRoteiro(ctx: Ctx, post: Post, correcoes?: string[]
       roteiro = { ...roteiro, slides: roteiro.slides.map((s, i) => (i === 0 ? { ...s, imagem_idx: 0 } : s)) };
       await logar(ctx, post, "roteiro", "info", `Capa voltou para imagem gerada: a foto real ${fotoDaCapa.indice} tem só ${fotoDaCapa.largura}x${fotoDaCapa.altura}.`);
     }
-    const falhas = validarRoteiro(roteiro, { tipo: post.tipo_pauta, cfg, pauta, fotosReais: reais.length, capasAnteriores: capasRecentes(hist) });
+    const falhas = validarRoteiro(roteiro, { tipo: post.tipo_pauta, cfg, pauta, fotosReais: reais.length, capasAnteriores: capasRecentes(hist), tarde });
     if (!falhas.length) break;
     await logar(ctx, post, "roteiro", "aviso", `Validação em código encontrou ${falhas.length} problema(s); corrigindo.`, falhas);
     problemas = falhas;

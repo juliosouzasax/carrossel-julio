@@ -11,7 +11,7 @@ type SaidaRevisao = { aprovado: boolean; itens: ItemRevisao[]; resumo: string; c
 
 export function checagensDeCodigo(post: Post, ctx: Ctx): string[] {
   if (!post.roteiro) return ["Post sem roteiro."];
-  return [...validarRoteiro({ ...post.roteiro, slides: post.slides, legenda: post.legenda }, { tipo: post.tipo_pauta, cfg: ctx.cfg, pauta: post.pauta, fotosReais: post.imagens_base.filter((i) => i.funcao === "fonte").length }), ...validarRender(post.slides)];
+  return [...validarRoteiro({ ...post.roteiro, slides: post.slides, legenda: post.legenda }, { tipo: post.tipo_pauta, cfg: ctx.cfg, pauta: post.pauta, fotosReais: post.imagens_base.filter((i) => i.funcao === "fonte").length, tarde: post.kind === "tarde" }), ...validarRender(post.slides)];
 }
 
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[“”"']/g, "").replace(/\s+/g, " ").trim();
@@ -50,7 +50,7 @@ export async function executarRevisao(ctx: Ctx, post: Post): Promise<{ post: Pos
   await garantirOrcamento(store, cfg);
   const falhasCodigo = checagensDeCodigo(post, ctx);
   const hist = await historico(ctx, post.id);
-  const p = promptRevisao({ cfg, dataHoje: ctx.agora.data, post, roteiro: { ...post.roteiro, slides: post.slides }, historico: hist, checagensDeCodigo: falhasCodigo });
+  const p = promptRevisao({ cfg, dataHoje: ctx.agora.data, post, roteiro: { ...post.roteiro, slides: post.slides }, historico: hist, checagensDeCodigo: falhasCodigo, tarde: post.kind === "tarde" });
 
   const conteudo: unknown[] = [{ type: "input_text", text: p.texto }];
   for (const s of post.slides) {

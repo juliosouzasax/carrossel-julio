@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { configPadrao } from "../src/lib/config";
 import { normalizarUrl, notaFinal, rankear } from "../src/lib/pipeline/pesquisa";
-import { validarRoteiro } from "../src/lib/pipeline/validacao";
+import { estiloDaCapaDoPost, temGancho, validarRoteiro } from "../src/lib/pipeline/validacao";
 import { dimensoesJpeg } from "../src/lib/render/jpeg";
 import { mesAnoDe, renderizarSlideJpeg, ALTURA, LARGURA } from "../src/lib/render/slides";
 import { jaccard } from "../src/lib/similaridade";
@@ -105,5 +105,34 @@ describe("variedade da capa", () => {
   });
   it("sem histórico não acusa nada", () => {
     expect(variedadeDaCapa("A dentist with banknotes", [])).toEqual([]);
+  });
+});
+
+describe("post das 18h (molde da Academia)", () => {
+  it("a capa da tarde é sempre 'ironia'; a do dia segue o rodízio", () => {
+    expect(estiloDaCapaDoPost("tarde", ["ironia", "ironia", "ironia"], 5)).toBe("ironia");
+    expect(estiloDaCapaDoPost("dia", ["ironia", "hiperbole", "caixa"], 0)).not.toBe("ironia");
+  });
+  it("na tarde a afirmação sensacionalista prende; no dia continua exigindo pergunta/número/promessa", () => {
+    const h = "A cada ano que passa o fim de ano pra clínicas fica pior";
+    expect(temGancho(h, true)).toBe(true);
+    expect(temGancho(h)).toBe(false);
+    expect(temGancho("Toda dentista já viveu isso", true)).toBe(true);
+    expect(temGancho("Sua clínica merece crescer", true)).toBe(false);
+  });
+  it("na tarde recusa 'cena hipotética' no slide e capa fora do estilo; não exige hipotetico=true", () => {
+    const r = roteiroFalso();
+    r.slides[0].estilo = "ironia";
+    r.slides[1].corpo = "Cena hipotética: alguém pediu informações e a conversa parou.";
+    r.slides[1].papel = "exemplo";
+    r.slides[1].hipotetico = false;
+    const f = validarRoteiro(r, { tipo: "atemporal", cfg, tarde: true });
+    expect(f.some((x) => /hipotética/i.test(x) && /Slide 2/.test(x))).toBe(true);
+    expect(f.some((x) => /hipotetico = true/.test(x))).toBe(false);
+    r.slides[1].corpo = "A recepção recebe três mensagens. Duas ficam sem resposta.";
+    r.slides[0].estilo = "tipografia";
+    const g = validarRoteiro(r, { tipo: "atemporal", cfg, tarde: true });
+    expect(g.some((x) => /estilo "ironia"/.test(x))).toBe(true);
+    expect(g.some((x) => /hipotética/i.test(x))).toBe(false);
   });
 });
