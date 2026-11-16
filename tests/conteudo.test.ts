@@ -111,7 +111,7 @@ describe("variedade da capa", () => {
 describe("post das 18h (molde da Academia)", () => {
   it("a capa da tarde é sempre 'ironia'; a do dia segue o rodízio", () => {
     expect(estiloDaCapaDoPost("tarde", ["ironia", "ironia", "ironia"], 5)).toBe("ironia");
-    expect(estiloDaCapaDoPost("dia", ["ironia", "hiperbole", "caixa"], 0)).not.toBe("ironia");
+    expect(estiloDaCapaDoPost("dia", ["hiperbole", "hiperbole", "hiperbole"], 3)).toBe("hiperbole");
   });
   it("na tarde a afirmação sensacionalista prende; no dia continua exigindo pergunta/número/promessa", () => {
     const h = "A cada ano que passa o fim de ano pra clínicas fica pior";

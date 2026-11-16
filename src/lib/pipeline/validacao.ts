@@ -39,9 +39,12 @@ const DINHEIRO = /\b(money|cash|banknotes?|bills?|reais|coins?|dinheiro|notas)\b
 const HOMEM_JALECO = /\bdentist\b/i;
 const PESSOA_DIFERENTE = /\b(female|woman|women|team|elderly|older|senior|receptionist|patient|hands only|no people|empty)\b/i;
 
-// Três desenhos de capa em rodízio (pedido do Julio, 12/11: "as capas estão todas parecidas"; referências usam
-// cartão claro com foto e capas só de tipografia). Escolhe o estilo que NÃO apareceu nas 2 últimas capas.
-export const ESTILOS_CAPA: EstiloCapa[] = ["hiperbole", "caixa", "ironia", "cartao", "bloco", "tipografia", "repeticao"];
+// PADRÃO ÚNICO DE CAPA (Julio, 16/11/2026, olhando o grid: "observe a quebra de padrão"). O rodízio de 7 desenhos
+// criado em 12/11 deixou o perfil com quatro visuais numa tela de oito. Volta ao molde de sempre: foto de borda a
+// borda com manchete condensada na base. Dia = "hiperbole" (escuro); tarde = "ironia" (Academia, foto clara) — mesma
+// silhueta. A variedade entre capas vem da IMAGEM (protagonista, cenário, paleta, câmera: `variedadeDaCapa`), não do layout.
+// Os outros desenhos continuam renderizáveis para posts antigos, mas não são mais sorteados.
+export const ESTILOS_CAPA: EstiloCapa[] = ["hiperbole"];
 export const ESTILOS_SEM_IMAGEM: EstiloCapa[] = ["tipografia", "repeticao"];
 // Escolhe o estilo que não apareceu nas 3 últimas capas, começando de um ponto diferente a cada post (semente)
 // para a ordem não virar previsível.
