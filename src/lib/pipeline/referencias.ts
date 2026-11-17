@@ -1,4 +1,4 @@
-// Pesquisa do post das 18h: em vez da web, a base é o que está ENGAJANDO nos perfis de referência
+// Pesquisa do post de referência (07h; kind "tarde" por histórico): em vez da web, a base é o que está ENGAJANDO nos perfis de referência
 // (annysoouto, fabioavelarmkt, rinovack, ilaflavia). Os posts deles são coletados pelo Chrome do Julio
 // (scripts/referencias-ig.ts) e ficam em referencias_ig; aqui o modelo lê os mais fortes e escolhe UM tema.
 import { garantirOrcamento, registrarTexto } from "../custo";
@@ -82,7 +82,7 @@ export async function executarPesquisaReferencias(ctx: Ctx, post: Post): Promise
   await store.salvarCandidatos({ post_id: post.id, data: post.data, candidatos, escolhido, justificativa, texto_bruto_pesquisa: resposta.texto.slice(0, 60_000) });
   if (escolhido === null) return { tipo: "sem_pauta", motivo: justificativa.slice(0, 600) };
   const pauta = candidatos[escolhido];
-  await logar(ctx, post, "pesquisa", "info", `Tema das 18h escolhido a partir de ${pauta.fontes.length} post(s) de referência: "${pauta.titulo}".`);
+  await logar(ctx, post, "pesquisa", "info", `Tema do post de referência escolhido a partir de ${pauta.fontes.length} post(s) de referência: "${pauta.titulo}".`);
   const atual = await store.atualizarPost(post.id, { pauta, justificativa, tipo_pauta: "referencia", status: "pesquisado", erro: null, imagens_base: [] });
   return { tipo: "ok", post: atual ?? post };
 }

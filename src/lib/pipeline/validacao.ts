@@ -59,7 +59,7 @@ export function proximoEstiloDaCapa(capasEstilosRecentes: string[], semente = 0)
   return ESTILOS_CAPA[inicio];
 }
 
-// POST DAS 18h (kind 'tarde'): a capa é SEMPRE o molde da Academia da Independência (estilo 'ironia': foto de página
+// POST DE REFERÊNCIA (kind 'tarde', sai às 07h): a capa é SEMPRE o molde da Academia da Independência (estilo 'ironia': foto de página
 // inteira com pessoa, manchete branca em caixa alta na base). Decisão do Julio em 15/11/2026, depois de ver que o rodízio
 // mandava capa creme/só-texto para a tarde. O post das 12h continua no rodízio.
 export const ESTILO_CAPA_TARDE: EstiloCapa = "ironia";
@@ -139,7 +139,7 @@ export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; 
     if (DEFENSIVO.test(`${x.titulo} ${x.corpo}`)) p.push(`Slide ${x.n}: tom defensivo/jurídico dentro do slide ("${(DEFENSIVO.exec(`${x.titulo} ${x.corpo}`) ?? [""])[0]}"). Se o fato não está confirmado, não entra no slide; se está, afirme com a fonte.`);
     if (x.imagem_idx !== null && x.imagem_idx !== undefined && (x.imagem_idx < 0 || x.imagem_idx > totalImagens)) p.push(`Slide ${x.n}: imagem_idx ${x.imagem_idx} não existe (válidos: 0 a ${totalImagens} — ${opc.fotosReais ?? 0} foto(s) real(is) + ${(r.prompts_imagens_extras ?? []).length} extra(s) da IA).`);
     if (x.papel === "exemplo" && !x.hipotetico && !opc.tarde) p.push(`Slide ${x.n}: exemplo inventado deve ser marcado como hipotético (hipotetico = true).`);
-    if (opc.tarde && PEDIDO_DE_DESCULPA.test(`${x.titulo} ${x.corpo}`)) p.push(`Slide ${x.n}: no post das 18h a cena é contada como da rotina, sem "${(PEDIDO_DE_DESCULPA.exec(`${x.titulo} ${x.corpo}`) ?? [""])[0]}". Não peça desculpa pelo exemplo; descreva a cena direto (sem números inventados).`);
+    if (opc.tarde && PEDIDO_DE_DESCULPA.test(`${x.titulo} ${x.corpo}`)) p.push(`Slide ${x.n}: no post de referência a cena é contada como da rotina, sem "${(PEDIDO_DE_DESCULPA.exec(`${x.titulo} ${x.corpo}`) ?? [""])[0]}". Não peça desculpa pelo exemplo; descreva a cena direto (sem números inventados).`);
     if (opc.tipo === "atemporal" && TEMPO_DE_NOTICIA.test(`${x.titulo} ${x.corpo}`)) p.push(`Slide ${x.n}: conteúdo atemporal não pode soar como notícia do dia (hoje/ontem/nesta semana).`);
     if (PROMESSA_DE_MATERIAL.test(`${x.titulo} ${x.corpo}`)) p.push(`Slide ${x.n}: não prometa material por mensagem ou link; essa entrega não existe.`);
     if (PROMESSA_DE_RESULTADO.test(`${x.titulo} ${x.corpo}`)) p.push(`Slide ${x.n}: remova promessa de resultado/faturamento.`);
@@ -166,15 +166,15 @@ export function validarRoteiro(r: Roteiro, opc: { tipo: TipoPauta; cfg: Config; 
     const textoTodo = [...s.map((x) => `${x.titulo} ${x.corpo} ${x.autor ?? ""} ${x.fonte_dado ?? ""} ${(x.itens ?? []).join(" ")}`), legenda].join("\n").toLowerCase();
     const normal = textoTodo.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     for (const u of perfis) if (normal.includes(u) || normal.includes(u.replace(/_/g, " "))) p.push(`Menção ao perfil de referência "${u}" não é permitida (slides ou legenda).`);
-    if (/@[a-z0-9_.]{3,}/.test(normal)) p.push("Não cite perfis (@) no conteúdo do post das 18h.");
+    if (/@[a-z0-9_.]{3,}/.test(normal)) p.push("Não cite perfis (@) no conteúdo do post de referência.");
     if (/\b(reel|reels)\b|\b(views|visualiza[cç][oõ]es)\b|\bcurtidas\b|est[aá] (engajando|bombando|viralizando)/.test(normal)) p.push("Não fale de reel, views, curtidas ou 'está engajando': o post das 18h é na voz do mentor, sem citar a pesquisa.");
   }
   if (opc.tipo === "noticia" && opc.pauta?.fontes?.length) {
     const algumaFonte = opc.pauta.fontes.some((f) => legenda.toLowerCase().includes(f.dominio.toLowerCase()));
     if (!algumaFonte) p.push("A legenda precisa citar as fontes (domínio de pelo menos uma fonte da pauta).");
   }
-  if (opc.tarde && PEDIDO_DE_DESCULPA.test(legenda)) p.push(`A legenda do post das 18h não usa "${(PEDIDO_DE_DESCULPA.exec(legenda) ?? [""])[0]}": conte a cena direto.`);
-  if (opc.tarde && s[0]?.estilo !== ESTILO_CAPA_TARDE) p.push(`A capa do post das 18h é sempre o estilo "${ESTILO_CAPA_TARDE}" (foto inteira com pessoa e manchete branca).`);
+  if (opc.tarde && PEDIDO_DE_DESCULPA.test(legenda)) p.push(`A legenda do post de referência não usa "${(PEDIDO_DE_DESCULPA.exec(legenda) ?? [""])[0]}": conte a cena direto.`);
+  if (opc.tarde && s[0]?.estilo !== ESTILO_CAPA_TARDE) p.push(`A capa do post de referência é sempre o estilo "${ESTILO_CAPA_TARDE}" (foto inteira com pessoa e manchete branca).`);
   if (!temGancho(r.headline_escolhida ?? "", !!opc.tarde)) p.push("A headline não prende: use duas partes — fato específico + pergunta ABERTA (por que/como/o que…) que o leitor não sabe responder — ou um número concreto, ou uma promessa de revelação (tudo que…, por trás de…). Falar com o leitor sozinho não basta, e a capa não pode entregar a tese.");
   const estiloCapa = s[0]?.estilo ?? "hiperbole";
   if (!r.prompt_imagem_capa?.trim() && !ESTILOS_SEM_IMAGEM.includes(estiloCapa)) p.push("Falta o prompt da imagem da capa.");

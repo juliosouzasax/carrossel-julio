@@ -21,7 +21,7 @@ export type StatusPost =
   | "falhou"
   | "perdeu_janela";
 
-// dia = post das 12h (notícia do mundo); tarde = post das 18h (tema tirado do que engaja nos perfis de referência);
+// dia = post das 12h (notícia do mundo); tarde = post de referência (07h desde 18/11/2026) (tema tirado do que engaja nos perfis de referência);
 // reserva = plano B pronto; teste = nunca publica.
 export type KindPost = "dia" | "tarde" | "reserva" | "teste";
 
@@ -71,7 +71,7 @@ export type Pauta = {
   descartada_por?: string | null;
 };
 
-// referencia = pauta tirada dos posts mais engajados dos perfis de referência (post das 18h).
+// referencia = pauta tirada dos posts mais engajados dos perfis de referência (post de referência, 07h).
 export type TipoPauta = "noticia" | "atemporal" | "referencia";
 
 // Um post de um perfil de referência, coletado pelo Chrome do Julio e gravado em referencias_ig.

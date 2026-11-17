@@ -28,17 +28,19 @@ export const ConfigSchema = z.object({
       publicacao: hhmm.default("12:00"),
     })
     .default({}),
-  // Segundo post do dia (18h): tema tirado do que está engajando nos perfis de referência. Nasce desligado.
+  // Post de REFERÊNCIA (kind "tarde" no banco, por histórico): tema tirado do que está engajando nos perfis de referência.
+  // Desde 18/11/2026 sai às 07h (Julio: "o primeiro carrossel que era 18h vai sair 07h da manhã"); o de notícia segue às 12h.
+  // Nasce desligado.
   tarde: z
     .object({
       ativo: z.boolean().default(false),
       horarios: z
         .object({
-          pesquisa: hhmm.default("15:00"),
-          roteiro: hhmm.default("15:30"),
-          prazo_revisao: hhmm.default("17:30"),
-          recheck: hhmm.default("17:45"),
-          publicacao: hhmm.default("18:00"),
+          pesquisa: hhmm.default("04:00"),
+          roteiro: hhmm.default("04:30"),
+          prazo_revisao: hhmm.default("06:30"),
+          recheck: hhmm.default("06:45"),
+          publicacao: hhmm.default("07:00"),
         })
         .default({}),
       perfis: z.array(z.string()).default(["annysoouto", "fabioavelarmkt", "rinovack", "ilaflavia"]),

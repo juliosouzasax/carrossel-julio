@@ -32,7 +32,7 @@ export interface Store {
   getConta(chave: string): Promise<ContaIG | null>;
   salvarConta(c: ContaIG): Promise<void>;
 
-  // Posts dos perfis de referência (base do post das 18h). Chave = (username, codigo); regravar atualiza.
+  // Posts dos perfis de referência (base do post de referência). Chave = (username, codigo); regravar atualiza.
   salvarReferencias(rows: ReferenciaIG[]): Promise<number>;
   listarReferencias(f: { desdeColetaISO: string; usernames?: string[] }): Promise<ReferenciaIG[]>;
 }

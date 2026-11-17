@@ -53,7 +53,7 @@ export function criarCtx(store: Store, blobs: Blobs, cfg: Config, agora: AgoraSP
 
 // ---------------------------------------------------------------------------------------------------
 // Janela de publicação (política de atraso): só publica entre o horário e o horário + janela.
-// Cada slot tem a sua grade: "dia" (12h) usa cfg.horarios; "tarde" (18h) usa cfg.tarde.horarios.
+// Cada slot tem a sua grade: "dia" (12h) usa cfg.horarios; "tarde" (referência, 07h) usa cfg.tarde.horarios.
 export function horariosDe(cfg: Config, kind: Post["kind"]): Config["horarios"] {
   return kind === "tarde" ? cfg.tarde.horarios : cfg.horarios;
 }
@@ -171,7 +171,7 @@ export async function avancar(ctx: Ctx, postInicial: Post, op: Opcoes = {}): Pro
       case "pesquisando": {
         if (dia && !liberadoPelo(cfg, agora, "pesquisa", post.kind)) return { post, acao: `nada (pesquisa só a partir de ${h.pesquisa})` };
         post = (await ctx.store.atualizarPost(post.id, { status: "pesquisando" })) ?? post;
-        // O post das 18h não pesquisa a web: lê o que engaja nos perfis de referência.
+        // O post de referência não pesquisa a web: lê o que engaja nos perfis de referência.
         const r = post.kind === "tarde" ? await passos.pesquisaReferencias(ctx, post) : await passos.pesquisa(ctx, post);
         if (r.tipo === "ok") return { post: r.post, acao: "pesquisa concluída" };
         post = await acionarFallback(ctx, post, r.motivo);
@@ -312,10 +312,10 @@ export async function tick(store: Store, blobs: Blobs, conta: string, op: Opcoes
       const { post: criado, criado: novo } = await store.criarPost({ conta, data: agora.data, kind: "dia", status: "novo", modo: cfg.modo });
       if (novo) await logar(ctx, criado, "orquestrador", "info", `Post do dia ${agora.data} criado.`);
     }
-    // E o post das 18h (tarde), quando ligado, na hora da pesquisa dele.
+    // E o post de referência (kind "tarde", hoje às 07h), quando ligado, na hora da pesquisa dele.
     if (cfg.tarde.ativo && cfg.dias_ativos.includes(agora.diaDaSemana) && agora.minutos >= minutosDe(cfg.tarde.horarios.pesquisa)) {
       const { post: criado, criado: novo } = await store.criarPost({ conta, data: agora.data, kind: "tarde", status: "novo", modo: cfg.modo, tipo_pauta: "referencia" });
-      if (novo) await logar(ctx, criado, "orquestrador", "info", `Post das ${cfg.tarde.horarios.publicacao} (tarde) de ${agora.data} criado.`);
+      if (novo) await logar(ctx, criado, "orquestrador", "info", `Post de referência das ${cfg.tarde.horarios.publicacao} de ${agora.data} criado.`);
     }
 
     }
