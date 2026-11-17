@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { rotuloDoKind } from "@/lib/types";
 import { notFound } from "next/navigation";
 import { exigirPagina } from "@/lib/auth";
 import { getStore } from "@/lib/store";
@@ -25,7 +26,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
         <p><Link href="/">← Hoje</Link></p>
         <h1>{post.roteiro?.headline_escolhida ?? post.pauta?.titulo ?? "Post"} </h1>
         <div className="linha">
-          <Status s={post.status} /><span className="pill">{post.kind}</span><span className="pill">{post.data}</span>
+          <Status s={post.status} /><span className="pill">{rotuloDoKind(post.kind)}</span><span className="pill">{post.data}</span>
           {post.pausado && <span className="pill aviso">Pausado</span>}<span className="pill">Custo US$ {custo.toFixed(2)}</span>
         </div>
         {post.motivo && <p className="msg">{post.motivo}</p>}

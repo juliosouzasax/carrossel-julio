@@ -276,3 +276,10 @@ export type ContaIG = {
   token_renovado_em: string | null;
   ultimo_erro: string | null;
 };
+
+// Rótulo humano do slot no painel. O kind "tarde" ficou no banco por histórico; desde 18/11/2026 ele sai às 07h.
+export function rotuloDoKind(kind: Post["kind"], horarios?: { dia?: string; tarde?: string }): string {
+  if (kind === "dia") return `notícia · ${horarios?.dia ?? "12h"}`;
+  if (kind === "tarde") return `referência · ${horarios?.tarde ?? "07h"}`;
+  return kind;
+}

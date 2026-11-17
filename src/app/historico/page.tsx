@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { rotuloDoKind } from "@/lib/types";
 import { exigirPagina } from "@/lib/auth";
 import { getStore } from "@/lib/store";
 import { Nav } from "../components/Nav";
@@ -20,7 +21,7 @@ export default async function Historico() {
             <tbody>
               {posts.map((p) => (
                 <tr key={p.id}>
-                  <td>{p.data}</td><td>{p.kind}</td><td><Status s={p.status} /></td>
+                  <td>{p.data}</td><td>{rotuloDoKind(p.kind)}</td><td><Status s={p.status} /></td>
                   <td><Link href={`/post/${p.id}`}>{p.roteiro?.headline_escolhida ?? p.pauta?.titulo ?? "(sem pauta)"}</Link></td>
                   <td>{p.publicacao.permalink ? <a href={p.publicacao.permalink} target="_blank" rel="noreferrer noopener">abrir</a> : "—"}</td>
                 </tr>

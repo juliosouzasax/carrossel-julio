@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { rotuloDoKind } from "@/lib/types";
 import { exigirPagina } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { agoraSP, dataBr } from "@/lib/tempo";
@@ -46,7 +47,7 @@ export default async function Hoje() {
         <h2>Testes e reservas de hoje</h2>
         {outros.length === 0 && <p className="mut">Nenhum.</p>}
         {outros.map((p) => (
-          <div key={p.id} className="card linha"><span className="pill">{p.kind}</span><Status s={p.status} /><Link href={`/post/${p.id}`}>{p.roteiro?.headline_escolhida ?? p.pauta?.titulo ?? p.id.slice(0, 8)}</Link></div>
+          <div key={p.id} className="card linha"><span className="pill">{rotuloDoKind(p.kind)}</span><Status s={p.status} /><Link href={`/post/${p.id}`}>{p.roteiro?.headline_escolhida ?? p.pauta?.titulo ?? p.id.slice(0, 8)}</Link></div>
         ))}
         <p className="linha">
           <CriarPost tipo="teste">Rodar um teste completo (não publica)</CriarPost>
